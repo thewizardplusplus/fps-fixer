@@ -63,7 +63,7 @@ options="$(
   getopt \
     --name "$script_name" \
     --options "vhe:b:f:E:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,no-process" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -75,6 +75,7 @@ declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
 declare fps_epsilon="2"
+declare process=TRUE
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -98,7 +99,9 @@ while [[ "$1" != "--" ]]; do
         "(default: \"./fixed-videos\");"
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
-        "(default: \"2\")."
+        "(default: \"2\");"
+      echo "  --no-process                         - don't process videos," \
+        "only search for them and check their FPS."
 
       exit 0
       ;;
@@ -117,6 +120,9 @@ while [[ "$1" != "--" ]]; do
     "-E" | "--epsilon")
       fps_epsilon="$2"
       shift # an additional shift for the option parameter
+      ;;
+    "--no-process")
+      process=FALSE
       ;;
   esac
 
@@ -138,6 +144,11 @@ find -maxdepth 1 -name "*.$video_extension" \
 
     if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
       log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
+      continue
+    fi
+
+    if [[ $process == FALSE ]]; then
+      log WARNING "video $(ansi "$YELLOW" "$video_path") doesn't have the target FPS"
       continue
     fi
 
