@@ -60,6 +60,48 @@ function is_target_fps() {
   "
 }
 
+declare -r script_name="$(basename "$0")"
+# it's necessary to separate the declaration and definition of the variable
+# so that the `declare` command doesn't hide an exit code of the defining expression
+declare options
+options="$(
+  getopt \
+    --name "$script_name" \
+    --options "vh" \
+    --longoptions "version,help" \
+    -- "$@"
+)"
+if [[ $? != 0 ]]; then
+  log ERROR "incorrect option"
+  exit 1
+fi
+
+eval set -- "$options"
+while [[ "$1" != "--" ]]; do
+  case "$1" in
+    "-v" | "--version")
+      echo "FPS Fixer, v1.1.0"
+      echo "Copyright (C) 2023 thewizardplusplus"
+
+      exit 0
+      ;;
+    "-h" | "--help")
+      echo "Usage:"
+      echo "  $script_name -v | --version"
+      echo "  $script_name -h | --help"
+      echo "  $script_name [options]"
+      echo
+      echo "Options:"
+      echo "  -v, --version  - show the version;"
+      echo "  -h, --help     - show the help;"
+
+      exit 0
+      ;;
+  esac
+
+  shift
+done
+
 set -o errtrace
 trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
 

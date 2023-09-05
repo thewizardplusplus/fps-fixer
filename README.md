@@ -22,11 +22,15 @@ The utility for fixing FPS in videos.
 ## Usage
 
 ```
-$ fps_fixer.bash
+$ fps_fixer.bash -v | --version
+$ fps_fixer.bash -h | --help
+$ fps_fixer.bash [options]
 ```
 
-Environment variables:
+Options:
 
+- `-v`, `--version` &mdash; show the version;
+- `-h`, `--help` &mdash; show the help;
 - `VIDEO_EXTENSION` &mdash; video file extension (default: `mp4`);
 - `FIXED_VIDEO_BASE_PATH` &mdash; base path for fixed videos (default: `./fixed-videos`);
 - `TARGET_FPS` &mdash; target FPS (default: `60`);
