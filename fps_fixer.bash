@@ -7,8 +7,6 @@ declare -r YELLOW="$(tput setaf 3)"
 declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
-declare -r FPS_EPSILON="${FPS_EPSILON-2}"
-
 function ansi() {
   declare -r code="$1"
   declare -r text="$2"
@@ -64,8 +62,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:b:f:" \
-    --longoptions "version,help,extension:,base-path:,fps:" \
+    --options "vhe:b:f:E:" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -76,6 +74,7 @@ fi
 declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
+declare fps_epsilon="2"
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -98,6 +97,8 @@ while [[ "$1" != "--" ]]; do
       echo "  -b PATH, --base-path PATH            - base path for fixed videos" \
         "(default: \"./fixed-videos\");"
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
+      echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
+        "(default: \"2\")."
 
       exit 0
       ;;
@@ -111,6 +112,10 @@ while [[ "$1" != "--" ]]; do
       ;;
     "-f" | "--fps")
       target_fps="$2"
+      shift # an additional shift for the option parameter
+      ;;
+    "-E" | "--epsilon")
+      fps_epsilon="$2"
       shift # an additional shift for the option parameter
       ;;
   esac
@@ -131,7 +136,7 @@ find -maxdepth 1 -name "*.$video_extension" \
     declare video_fps="$(get_fps "$video_path")"
     log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if (( "$(is_target_fps "$video_fps" "$target_fps" "$FPS_EPSILON")" )); then
+    if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
       log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
       continue
     fi
