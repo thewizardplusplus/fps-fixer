@@ -7,7 +7,6 @@ declare -r YELLOW="$(tput setaf 3)"
 declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
-declare -r FIXED_VIDEO_BASE_PATH="${FIXED_VIDEO_BASE_PATH-./fixed-videos}"
 declare -r TARGET_FPS="${TARGET_FPS-60}"
 declare -r FPS_EPSILON="${FPS_EPSILON-2}"
 
@@ -66,8 +65,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:" \
-    --longoptions "version,help,extension:" \
+    --options "vhe:b:" \
+    --longoptions "version,help,extension:,base-path:" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -76,6 +75,7 @@ if [[ $? != 0 ]]; then
 fi
 
 declare video_extension="mp4"
+declare fixed_video_base_path="./fixed-videos"
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -95,11 +95,17 @@ while [[ "$1" != "--" ]]; do
       echo "  -v, --version                        - show the version;"
       echo "  -h, --help                           - show the help;"
       echo "  -e EXTENSION, --extension EXTENSION  - video file extension (default: \"mp4\");"
+      echo "  -b PATH, --base-path PATH            - base path for fixed videos" \
+        "(default: \"./fixed-videos\");"
 
       exit 0
       ;;
     "-e" | "--extension")
       video_extension="$2"
+      shift # an additional shift for the option parameter
+      ;;
+    "-b" | "--base-path")
+      fixed_video_base_path="$2"
       shift # an additional shift for the option parameter
       ;;
   esac
@@ -110,7 +116,7 @@ done
 set -o errtrace
 trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
 
-mkdir --parents "$FIXED_VIDEO_BASE_PATH"
+mkdir --parents "$fixed_video_base_path"
 
 find -maxdepth 1 -name "*.$video_extension" \
   | while read -r; do
@@ -129,7 +135,7 @@ find -maxdepth 1 -name "*.$video_extension" \
     declare fixed_video_path="./$(realpath --relative-to "." "$(
       printf \
         "%s/%s.%s_fps.%s" \
-        "$FIXED_VIDEO_BASE_PATH" \
+        "$fixed_video_base_path" \
         "$video_path_without_extension" \
         "$TARGET_FPS" \
         "$video_extension"
