@@ -7,7 +7,6 @@ declare -r YELLOW="$(tput setaf 3)"
 declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
-declare -r VIDEO_EXTENSION="${VIDEO_EXTENSION-mp4}"
 declare -r FIXED_VIDEO_BASE_PATH="${FIXED_VIDEO_BASE_PATH-./fixed-videos}"
 declare -r TARGET_FPS="${TARGET_FPS-60}"
 declare -r FPS_EPSILON="${FPS_EPSILON-2}"
@@ -67,8 +66,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vh" \
-    --longoptions "version,help" \
+    --options "vhe:" \
+    --longoptions "version,help,extension:" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -76,6 +75,7 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
+declare video_extension="mp4"
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -92,10 +92,15 @@ while [[ "$1" != "--" ]]; do
       echo "  $script_name [options]"
       echo
       echo "Options:"
-      echo "  -v, --version  - show the version;"
-      echo "  -h, --help     - show the help;"
+      echo "  -v, --version                        - show the version;"
+      echo "  -h, --help                           - show the help;"
+      echo "  -e EXTENSION, --extension EXTENSION  - video file extension (default: \"mp4\");"
 
       exit 0
+      ;;
+    "-e" | "--extension")
+      video_extension="$2"
+      shift # an additional shift for the option parameter
       ;;
   esac
 
@@ -107,7 +112,7 @@ trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
 
 mkdir --parents "$FIXED_VIDEO_BASE_PATH"
 
-find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
+find -maxdepth 1 -name "*.$video_extension" \
   | while read -r; do
     declare video_path="$REPLY"
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
@@ -120,14 +125,14 @@ find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
       continue
     fi
 
-    declare video_path_without_extension="${video_path%.$VIDEO_EXTENSION}"
+    declare video_path_without_extension="${video_path%.$video_extension}"
     declare fixed_video_path="./$(realpath --relative-to "." "$(
       printf \
         "%s/%s.%s_fps.%s" \
         "$FIXED_VIDEO_BASE_PATH" \
         "$video_path_without_extension" \
         "$TARGET_FPS" \
-        "$VIDEO_EXTENSION"
+        "$video_extension"
     )")"
     ffmpeg \
       -nostdin \

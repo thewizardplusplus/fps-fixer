@@ -31,7 +31,7 @@ Options:
 
 - `-v`, `--version` &mdash; show the version;
 - `-h`, `--help` &mdash; show the help;
-- `VIDEO_EXTENSION` &mdash; video file extension (default: `mp4`);
+- `-e EXTENSION`, `--extension EXTENSION` &mdash; video file extension (default: `mp4`);
 - `FIXED_VIDEO_BASE_PATH` &mdash; base path for fixed videos (default: `./fixed-videos`);
 - `TARGET_FPS` &mdash; target FPS (default: `60`);
 - `FPS_EPSILON` &mdash; allowable error when comparing FPS (default: `2`).
