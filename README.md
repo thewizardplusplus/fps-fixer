@@ -1,5 +1,9 @@
 # FPS Fixer
 
+## Requirements
+
+- [FFmpeg](https://ffmpeg.org/) >=4.4.2, <5.0.
+
 ## Usage
 
 ```
