@@ -89,19 +89,23 @@ while [[ "$1" != "--" ]]; do
       echo "Usage:"
       echo "  $script_name -v | --version"
       echo "  $script_name -h | --help"
-      echo "  $script_name [options]"
+      echo "  $script_name [options] [<path>]"
       echo
       echo "Options:"
       echo "  -v, --version                        - show the version;"
       echo "  -h, --help                           - show the help;"
       echo "  -e EXTENSION, --extension EXTENSION  - video file extension (default: \"mp4\");"
       echo "  -b PATH, --base-path PATH            - base path for fixed videos" \
-        "(default: \"./fixed-videos\");"
+        "(should be relative to argument \"<path>\"; default: \"./fixed-videos\");"
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
         "(default: \"2\");"
       echo "  --no-process                         - don't process videos," \
         "only search for them and check their FPS."
+      echo
+      echo "Arguments:"
+      echo "  <path>                               - base path to original videos" \
+        "(default: \".\")."
 
       exit 0
       ;;
@@ -129,12 +133,22 @@ while [[ "$1" != "--" ]]; do
   shift
 done
 
+declare original_video_base_path="."
+shift # an additional shift for the "--" option
+if [[ $# == 1 ]]; then
+  original_video_base_path="$1"
+  fixed_video_base_path="$original_video_base_path/$fixed_video_base_path"
+elif [[ $# > 1 ]]; then
+  log ERROR "too many positional arguments"
+  exit 1
+fi
+
 set -o errtrace
 trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
 
 mkdir --parents "$fixed_video_base_path"
 
-find -maxdepth 1 -name "*.$video_extension" \
+find "$original_video_base_path" -maxdepth 1 -name "*.$video_extension" \
   | while read -r; do
     declare video_path="$REPLY"
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
@@ -152,12 +166,13 @@ find -maxdepth 1 -name "*.$video_extension" \
       continue
     fi
 
-    declare video_path_without_extension="${video_path%.$video_extension}"
+    declare video_name="$(basename "$video_path")"
+    declare video_name_without_extension="${video_name%.$video_extension}"
     declare fixed_video_path="./$(realpath --relative-to "." "$(
       printf \
         "%s/%s.%s_fps.%s" \
         "$fixed_video_base_path" \
-        "$video_path_without_extension" \
+        "$video_name_without_extension" \
         "$target_fps" \
         "$video_extension"
     )")"
