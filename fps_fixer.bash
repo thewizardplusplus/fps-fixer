@@ -7,7 +7,6 @@ declare -r YELLOW="$(tput setaf 3)"
 declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
-declare -r TARGET_FPS="${TARGET_FPS-60}"
 declare -r FPS_EPSILON="${FPS_EPSILON-2}"
 
 function ansi() {
@@ -65,8 +64,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:b:" \
-    --longoptions "version,help,extension:,base-path:" \
+    --options "vhe:b:f:" \
+    --longoptions "version,help,extension:,base-path:,fps:" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -76,6 +75,7 @@ fi
 
 declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
+declare target_fps="60"
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -97,6 +97,7 @@ while [[ "$1" != "--" ]]; do
       echo "  -e EXTENSION, --extension EXTENSION  - video file extension (default: \"mp4\");"
       echo "  -b PATH, --base-path PATH            - base path for fixed videos" \
         "(default: \"./fixed-videos\");"
+      echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
 
       exit 0
       ;;
@@ -106,6 +107,10 @@ while [[ "$1" != "--" ]]; do
       ;;
     "-b" | "--base-path")
       fixed_video_base_path="$2"
+      shift # an additional shift for the option parameter
+      ;;
+    "-f" | "--fps")
+      target_fps="$2"
       shift # an additional shift for the option parameter
       ;;
   esac
@@ -126,7 +131,7 @@ find -maxdepth 1 -name "*.$video_extension" \
     declare video_fps="$(get_fps "$video_path")"
     log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if (( "$(is_target_fps "$video_fps" "$TARGET_FPS" "$FPS_EPSILON")" )); then
+    if (( "$(is_target_fps "$video_fps" "$target_fps" "$FPS_EPSILON")" )); then
       log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
       continue
     fi
@@ -137,7 +142,7 @@ find -maxdepth 1 -name "*.$video_extension" \
         "%s/%s.%s_fps.%s" \
         "$fixed_video_base_path" \
         "$video_path_without_extension" \
-        "$TARGET_FPS" \
+        "$target_fps" \
         "$video_extension"
     )")"
     ffmpeg \
@@ -146,7 +151,7 @@ find -maxdepth 1 -name "*.$video_extension" \
       -stats \
       -y \
       -i "$video_path" \
-      -filter:v fps="$TARGET_FPS" \
+      -filter:v fps="$target_fps" \
       "$fixed_video_path"
     log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
   done
