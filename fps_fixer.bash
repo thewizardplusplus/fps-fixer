@@ -1,9 +1,44 @@
 #!/usr/bin/env bash
 
+declare -r BLACK="$(tput setaf 237)"
+declare -r RED="$(tput setaf 1)"
+declare -r GREEN="$(tput setaf 2)"
+declare -r YELLOW="$(tput setaf 3)"
+declare -r MAGENTA="$(tput setaf 4)"
+declare -r RESET="$(tput sgr0)"
+
 declare -r VIDEO_EXTENSION="${VIDEO_EXTENSION-mp4}"
 declare -r FIXED_VIDEO_BASE_PATH="${FIXED_VIDEO_BASE_PATH-./fixed-videos}"
 declare -r TARGET_FPS="${TARGET_FPS-60}"
 declare -r FPS_EPSILON="${FPS_EPSILON-2}"
+
+function ansi() {
+  declare -r code="$1"
+  declare -r text="$2"
+
+  echo -n "$code$text$RESET"
+}
+
+function log() {
+  declare -r level="$1"
+
+  shift # a shift for the first parameter
+  declare -r message="$*"
+
+  declare level_color=""
+  if [[ $level == INFO ]]; then
+    level_color="$GREEN"
+  elif [[ $level == WARNING ]]; then
+    level_color="$YELLOW"
+  elif [[ $level == ERROR ]]; then
+    level_color="$RED"
+  fi
+
+  echo "$(ansi "$BLACK" "$(date --rfc-3339=ns)")" \
+    "$(ansi "$level_color" "[$level]")" \
+    "$message" \
+    1>&2
+}
 
 function get_fps() {
   declare -r file_path="$1"
@@ -30,13 +65,13 @@ mkdir --parents "$FIXED_VIDEO_BASE_PATH"
 find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
   | while read -r; do
     declare video_path="$REPLY"
-    echo "process video $video_path"
+    log INFO "process video $(ansi "$YELLOW" "$video_path")"
 
     declare video_fps="$(get_fps "$video_path")"
-    echo "video $video_path has $video_fps FPS"
+    log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
     if (( "$(is_target_fps "$video_fps" "$TARGET_FPS" "$FPS_EPSILON")" )); then
-      echo "video $video_path already has the target FPS"
+      log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
       continue
     fi
 
@@ -57,5 +92,5 @@ find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
       -i "$video_path" \
       -filter:v fps="$TARGET_FPS" \
       "$fixed_video_path"
-    echo "fixed video path: $fixed_video_path"
+    log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
   done
