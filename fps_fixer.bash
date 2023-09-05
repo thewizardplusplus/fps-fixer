@@ -60,6 +60,9 @@ function is_target_fps() {
   "
 }
 
+set -o errtrace
+trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
+
 mkdir --parents "$FIXED_VIDEO_BASE_PATH"
 
 find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
