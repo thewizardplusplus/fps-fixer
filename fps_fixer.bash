@@ -49,5 +49,13 @@ find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
         "$TARGET_FPS" \
         "$VIDEO_EXTENSION"
     )")"
+    ffmpeg \
+      -nostdin \
+      -loglevel warning \
+      -stats \
+      -y \
+      -i "$video_path" \
+      -filter:v fps="$TARGET_FPS" \
+      "$fixed_video_path"
     echo "fixed video path: $fixed_video_path"
   done
