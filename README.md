@@ -1,6 +1,6 @@
 # FPS Fixer
 
-![](docs/screenshot.png)
+![](docs/screenshot_1.png)
 
 The utility for fixing FPS in videos.
 
