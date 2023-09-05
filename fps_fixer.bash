@@ -39,4 +39,15 @@ find -maxdepth 1 -name "*.$VIDEO_EXTENSION" \
       echo "video $video_path already has the target FPS"
       continue
     fi
+
+    declare video_path_without_extension="${video_path%.$VIDEO_EXTENSION}"
+    declare fixed_video_path="./$(realpath --relative-to "." "$(
+      printf \
+        "%s/%s.%s_fps.%s" \
+        "$FIXED_VIDEO_BASE_PATH" \
+        "$video_path_without_extension" \
+        "$TARGET_FPS" \
+        "$VIDEO_EXTENSION"
+    )")"
+    echo "fixed video path: $fixed_video_path"
   done
