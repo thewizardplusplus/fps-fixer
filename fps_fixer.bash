@@ -143,10 +143,12 @@ elif [[ $# > 1 ]]; then
   exit 1
 fi
 
+if [[ $process == TRUE ]]; then
+  mkdir --parents "$fixed_video_base_path"
+fi
+
 set -o errtrace
 trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
-
-mkdir --parents "$fixed_video_base_path"
 
 find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" \
   | while read -r; do
