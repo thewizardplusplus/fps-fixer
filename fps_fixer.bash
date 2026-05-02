@@ -63,7 +63,7 @@ options="$(
   getopt \
     --name "$script_name" \
     --options "vhe:b:f:E:s:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-process" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -76,7 +76,8 @@ declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
 declare fps_epsilon="2"
 declare speed_factor=""
-declare process=TRUE
+declare no_audio=FALSE
+declare no_process=FALSE
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -103,6 +104,7 @@ while [[ "$1" != "--" ]]; do
         "(default: \"2\");"
       echo "  -s SPEED, --speed-factor SPEED       - optional acceleration speed factor" \
         "between 0.5 and 2.0 (inclusive);"
+      echo "  --no-audio                           - remove audio from output videos;"
       echo "  --no-process                         - don't process videos," \
         "only search for them and check their FPS."
       echo
@@ -132,8 +134,11 @@ while [[ "$1" != "--" ]]; do
       speed_factor="$2"
       shift # an additional shift for the option parameter
       ;;
+    "--no-audio")
+      no_audio=TRUE
+      ;;
     "--no-process")
-      process=FALSE
+      no_process=TRUE
       ;;
   esac
 
@@ -150,7 +155,7 @@ elif [[ $# > 1 ]]; then
   exit 1
 fi
 
-if [[ $process == TRUE ]]; then
+if [[ $no_process != TRUE ]]; then
   mkdir --parents "$fixed_video_base_path"
 fi
 
@@ -182,7 +187,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
       continue
     fi
 
-    if [[ $process == FALSE ]]; then
+    if [[ $no_process == TRUE ]]; then
       log WARNING "video $(ansi "$YELLOW" "$video_path") doesn't have the target FPS"
       continue
     fi
@@ -204,6 +209,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
       -y \
       -i "$video_path" \
       -filter:v fps="$target_fps" \
+      $(if [[ $no_audio == TRUE ]]; then echo "-an"; fi) \
       "$fixed_video_path"
     log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
 
@@ -217,15 +223,28 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
           "$speed_factor" \
           "$video_extension"
       )")"
-      ffmpeg \
-        -nostdin \
-        -loglevel warning \
-        -stats \
-        -y \
-        -i "$fixed_video_path" \
-        -filter_complex "[0:v]setpts=PTS/$speed_factor[v];[0:a]atempo=$speed_factor[a]" \
-        -map "[v]" -map "[a]" \
-        "$accelerated_video_path"
+      if [[ $no_audio != TRUE ]]; then
+        ffmpeg \
+          -nostdin \
+          -loglevel warning \
+          -stats \
+          -y \
+          -i "$fixed_video_path" \
+          -filter_complex "[0:v]setpts=PTS/$speed_factor[v];[0:a]atempo=$speed_factor[a]" \
+          -map "[v]" -map "[a]" \
+          "$accelerated_video_path"
+      else
+        ffmpeg \
+          -nostdin \
+          -loglevel warning \
+          -stats \
+          -y \
+          -i "$fixed_video_path" \
+          -filter_complex "[0:v]setpts=PTS/$speed_factor[v]" \
+          -map "[v]" \
+          -an \
+          "$accelerated_video_path"
+      fi
       log INFO "accelerated video path: $(ansi "$YELLOW" "$accelerated_video_path")"
     fi
   done
