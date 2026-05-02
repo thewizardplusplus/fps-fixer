@@ -62,8 +62,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:b:f:E:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,no-process" \
+    --options "vhe:b:f:E:s:" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-process" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -75,6 +75,7 @@ declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
 declare fps_epsilon="2"
+declare speed_factor=""
 declare process=TRUE
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
@@ -100,6 +101,8 @@ while [[ "$1" != "--" ]]; do
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
         "(default: \"2\");"
+      echo "  -s SPEED, --speed-factor SPEED       - optional acceleration speed factor" \
+        "between 0.5 and 2.0 (inclusive);"
       echo "  --no-process                         - don't process videos," \
         "only search for them and check their FPS."
       echo
@@ -125,6 +128,10 @@ while [[ "$1" != "--" ]]; do
       fps_epsilon="$2"
       shift # an additional shift for the option parameter
       ;;
+    "-s" | "--speed-factor")
+      speed_factor="$2"
+      shift # an additional shift for the option parameter
+      ;;
     "--no-process")
       process=FALSE
       ;;
@@ -145,6 +152,18 @@ fi
 
 if [[ $process == TRUE ]]; then
   mkdir --parents "$fixed_video_base_path"
+fi
+
+if [[ -n "$speed_factor" ]]; then
+  if ! [[ "$speed_factor" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    log ERROR "incorrect speed factor: should be a floating-point number"
+    exit 1
+  fi
+
+  if (( "$(bc <<< "$speed_factor < 0.5 || $speed_factor > 2.0")" )); then
+    log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
+    exit 1
+  fi
 fi
 
 set -o errtrace
@@ -187,4 +206,26 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
       -filter:v fps="$target_fps" \
       "$fixed_video_path"
     log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
+
+    if [[ -n "$speed_factor" ]]; then
+      declare accelerated_video_path="./$(realpath --relative-to "." "$(
+        printf \
+          "%s/%s.%s_fps.%sx.%s" \
+          "$fixed_video_base_path" \
+          "$video_name_without_extension" \
+          "$target_fps" \
+          "$speed_factor" \
+          "$video_extension"
+      )")"
+      ffmpeg \
+        -nostdin \
+        -loglevel warning \
+        -stats \
+        -y \
+        -i "$fixed_video_path" \
+        -filter_complex "[0:v]setpts=PTS/$speed_factor[v];[0:a]atempo=$speed_factor[a]" \
+        -map "[v]" -map "[a]" \
+        "$accelerated_video_path"
+      log INFO "accelerated video path: $(ansi "$YELLOW" "$accelerated_video_path")"
+    fi
   done
