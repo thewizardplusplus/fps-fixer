@@ -209,7 +209,9 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
       -y \
       -i "$video_path" \
       -filter:v fps="$target_fps" \
-      $(if [[ $no_audio == TRUE ]]; then echo "-an"; fi) \
+      -fps_mode:v cfr \
+      -map 0:v \
+      $(if [[ $no_audio != TRUE ]]; then echo "-map 0:a?"; else echo "-an"; fi) \
       "$fixed_video_path"
     log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
 
