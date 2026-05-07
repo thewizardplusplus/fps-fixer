@@ -40,7 +40,8 @@ function get_fps() {
 
   ffmpeg -i "$file_path" 2>&1 \
     | grep --perl-regexp --only-matching "\d+([.,]\d+)?\s*(?=fps)" \
-    | sed --regexp-extended "s/\s*$//"
+    | sed --regexp-extended "s/\s*$//" \
+    | head --lines 1
 }
 
 function is_target_fps() {
@@ -180,6 +181,12 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
 
     declare video_fps="$(get_fps "$video_path")"
+    if ! [[ "$video_fps" =~ ^[0-9]+([.,][0-9]+)?$ ]]; then
+      log WARNING "unable to extract FPS from video $(ansi "$YELLOW" "$video_path")"
+      continue
+    fi
+
+    video_fps="${video_fps/,/.}"
     log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
     if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
