@@ -19,6 +19,11 @@ The utility for fixing FPS in videos.
 ## Requirements
 
 - [FFmpeg](https://ffmpeg.org/) >=4.4.2, <5.0.
+- `bc`.
+- GNU tools:
+  - `getopt`;
+  - `date` (with `--rfc-3339=ns`);
+  - `realpath` (with `--relative-to`).
 
 ## Usage
 
@@ -36,6 +41,8 @@ Options:
 - `-b PATH`, `--base-path PATH` &mdash; base path for fixed videos (should be relative to argument `<path>`; default: `./fixed-videos`);
 - `-f FPS`, `--fps FPS` &mdash; target FPS (default: `60`);
 - `-E EPSILON`, `--epsilon EPSILON` &mdash; allowable error when comparing FPS (default: `2`);
+- `-s SPEED`, `--speed-factor SPEED` &mdash; optional acceleration speed factor between `0.5` and `2.0` (inclusive);
+- `--no-audio` &mdash; remove audio from output videos;
 - `--no-process` &mdash; don't process videos, only search for them and check their FPS.
 
 Arguments:
