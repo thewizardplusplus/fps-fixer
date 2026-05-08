@@ -35,14 +35,14 @@ function log() {
     1>&2
 }
 
-# keep this regex core compatible with Bash ERE (the strictest engine used in this script)
-declare -r DECIMAL_NUMBER_REGEX_CORE='[0-9]+([.,][0-9]+)?'
+# keep this regexp compatible with Bash ERE (the strictest engine used in this script)
+declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
 
 function get_fps() {
   declare -r file_path="$1"
 
   ffmpeg -i "$file_path" 2>&1 \
-    | grep --perl-regexp --only-matching "$DECIMAL_NUMBER_REGEX_CORE\s*(?=fps)" \
+    | grep --perl-regexp --only-matching "$DECIMAL_NUMBER_REGEXP\s*(?=fps)" \
     | sed --regexp-extended "s/\s*$//" \
     | head --lines 1 \
     | sed "s/,/./"
@@ -165,7 +165,7 @@ if [[ $no_process != TRUE ]]; then
 fi
 
 if [[ -n "$speed_factor" ]]; then
-  if ! [[ "$speed_factor" =~ ^$DECIMAL_NUMBER_REGEX_CORE$ ]]; then
+  if ! [[ "$speed_factor" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
     log ERROR "incorrect speed factor: should be a floating-point number"
     exit 1
   fi
