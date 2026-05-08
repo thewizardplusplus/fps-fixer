@@ -9,7 +9,10 @@ The utility for fixing FPS in videos.
 - search of videos:
   - filtering by a video file extension;
   - skipping videos with near target FPS;
-- fixing FPS in videos that have FPS less than or greater than the specified FPS;
+- video correction:
+  - fixing FPS in videos that have FPS less than or greater than the specified FPS;
+  - optional acceleration/deceleration of output videos with a custom speed factor;
+  - optional removal of audio from output videos;
 - automatic directory creation for fixed videos;
 - the mode without real processing of videos, only with search of them and check of their FPS;
 - logging:
