@@ -35,11 +35,15 @@ function log() {
     1>&2
 }
 
+# NOTE: keep this regex core compatible with Bash ERE (the strictest engine used in this script).
+# Avoid PCRE-only features (e.g. lookarounds, \d, non-capturing groups, etc.).
+declare -r DECIMAL_NUMBER_REGEX_CORE='[0-9]+([.,][0-9]+)?'
+
 function get_fps() {
   declare -r file_path="$1"
 
   ffmpeg -i "$file_path" 2>&1 \
-    | grep --perl-regexp --only-matching "\d+([.,]\d+)?\s*(?=fps)" \
+    | grep --perl-regexp --only-matching "$DECIMAL_NUMBER_REGEX_CORE\s*(?=fps)" \
     | sed --regexp-extended "s/\s*$//" \
     | head --lines 1 \
     | sed "s/,/./"
@@ -162,10 +166,12 @@ if [[ $no_process != TRUE ]]; then
 fi
 
 if [[ -n "$speed_factor" ]]; then
-  if ! [[ "$speed_factor" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+  if ! [[ "$speed_factor" =~ ^$DECIMAL_NUMBER_REGEX_CORE$ ]]; then
     log ERROR "incorrect speed factor: should be a floating-point number"
     exit 1
   fi
+
+  speed_factor="${speed_factor/,/.}"
 
   if (( "$(bc <<< "$speed_factor < 0.5 || $speed_factor > 2.0")" )); then
     log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
