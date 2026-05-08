@@ -20,7 +20,10 @@ The utility for fixing FPS in videos.
 
 - [FFmpeg](https://ffmpeg.org/) >=4.4.2, <5.0.
 - `bc`.
-- GNU tools: `getopt`, `date` (with `--rfc-3339=ns`), `realpath` (with `--relative-to`).
+- GNU tools:
+  - `getopt`;
+  - `date` (with `--rfc-3339=ns`);
+  - `realpath` (with `--relative-to`).
 
 ## Usage
 
