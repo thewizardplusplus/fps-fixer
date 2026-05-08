@@ -35,8 +35,7 @@ function log() {
     1>&2
 }
 
-# NOTE: keep this regex core compatible with Bash ERE (the strictest engine used in this script).
-# Avoid PCRE-only features (e.g. lookarounds, \d, non-capturing groups, etc.).
+# keep this regex core compatible with Bash ERE (the strictest engine used in this script)
 declare -r DECIMAL_NUMBER_REGEX_CORE='[0-9]+([.,][0-9]+)?'
 
 function get_fps() {
