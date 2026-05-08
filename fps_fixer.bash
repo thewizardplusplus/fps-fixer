@@ -7,6 +7,9 @@ declare -r YELLOW="$(tput setaf 3)"
 declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
+# keep this regexp compatible with Bash ERE (the strictest engine used in this script)
+declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
+
 function ansi() {
   declare -r code="$1"
   declare -r text="$2"
@@ -34,9 +37,6 @@ function log() {
     "$message" \
     1>&2
 }
-
-# keep this regexp compatible with Bash ERE (the strictest engine used in this script)
-declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
 
 function get_fps() {
   declare -r file_path="$1"
