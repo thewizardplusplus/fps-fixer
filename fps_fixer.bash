@@ -9,6 +9,7 @@ declare -r RESET="$(tput sgr0)"
 
 # keep this regexp compatible with Bash ERE (the strictest engine used in this script)
 declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
+declare -r FLOATING_POINT_TOLERANCE="0.000001"
 
 function ansi() {
   declare -r code="$1"
@@ -56,7 +57,7 @@ function is_target_fps() {
   bc <<< "
     define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
-    abs($fps - $target_fps) < $epsilon
+    abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
   "
 }
 
@@ -67,8 +68,8 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:b:f:E:s:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process" \
+    --options "vhe:b:f:E:Fs:" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,force,speed-factor:,no-audio,no-process" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -80,6 +81,7 @@ declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
 declare fps_epsilon="2"
+declare force_processing=FALSE
 declare speed_factor=""
 declare no_audio=FALSE
 declare no_process=FALSE
@@ -107,6 +109,7 @@ while [[ "$1" != "--" ]]; do
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
         "(default: \"2\");"
+      echo "  -F, --force                          - process every video regardless of FPS check;"
       echo "  -s SPEED, --speed-factor SPEED       - optional acceleration speed factor" \
         "between 0.5 and 2.0 (inclusive);"
       echo "  --no-audio                           - remove audio from output videos;"
@@ -134,6 +137,9 @@ while [[ "$1" != "--" ]]; do
     "-E" | "--epsilon")
       fps_epsilon="$2"
       shift # an additional shift for the option parameter
+      ;;
+    "-F" | "--force")
+      force_processing=TRUE
       ;;
     "-s" | "--speed-factor")
       speed_factor="$2"
@@ -186,17 +192,21 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
     declare video_path="$REPLY"
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
 
-    declare video_fps="$(get_fps "$video_path")"
-    if [[ -z "$video_fps" ]]; then
-      log WARNING "unable to extract FPS from video $(ansi "$YELLOW" "$video_path")"
-      continue
-    fi
+    if [[ $force_processing != TRUE ]]; then
+      declare video_fps="$(get_fps "$video_path")"
+      if [[ -z "$video_fps" ]]; then
+        log WARNING "unable to extract FPS from video $(ansi "$YELLOW" "$video_path")"
+        continue
+      fi
 
-    log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
+      log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
-      log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
-      continue
+      if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
+        log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
+        continue
+      fi
+    else
+      log WARNING "force processing is enabled; skip FPS check for video $(ansi "$YELLOW" "$video_path")"
     fi
 
     if [[ $no_process == TRUE ]]; then

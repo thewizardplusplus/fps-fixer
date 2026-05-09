@@ -15,6 +15,7 @@ The utility for fixing FPS in videos.
   - optional removal of audio from output videos;
 - automatic directory creation for fixed videos;
 - the mode without real processing of videos, only with search of them and check of their FPS;
+- the mode with processing every video regardless of FPS check;
 - logging:
   - logging of a video name and FPS at the beginning of processing;
   - logging of a fixed video path at the end of processing.
@@ -44,6 +45,7 @@ Options:
 - `-b PATH`, `--base-path PATH` &mdash; base path for fixed videos (should be relative to argument `<path>`; default: `./fixed-videos`);
 - `-f FPS`, `--fps FPS` &mdash; target FPS (default: `60`);
 - `-E EPSILON`, `--epsilon EPSILON` &mdash; allowable error when comparing FPS (default: `2`);
+- `-F`, `--force` &mdash; process every video regardless of FPS check;
 - `-s SPEED`, `--speed-factor SPEED` &mdash; optional acceleration speed factor between `0.5` and `2.0` (inclusive);
 - `--no-audio` &mdash; remove audio from output videos;
 - `--no-process` &mdash; don't process videos, only search for them and check their FPS.
