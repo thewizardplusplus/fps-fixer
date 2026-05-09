@@ -15,6 +15,7 @@ The utility for fixing FPS in videos.
   - optional removal of audio from output videos;
 - automatic directory creation for fixed videos;
 - the mode without real processing of videos, only with search of them and check of their FPS;
+- the mode with processing every video regardless of FPS check;
 - logging:
   - logging of a video name and FPS at the beginning of processing;
   - logging of a fixed video path at the end of processing.
