@@ -52,11 +52,12 @@ function is_target_fps() {
   declare -r fps="$1"
   declare -r target_fps="$2"
   declare -r epsilon="$3"
+  declare -r floating_point_tolerance="0.000001"
 
   bc <<< "
     define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
-    abs($fps - $target_fps) < $epsilon
+    abs($fps - $target_fps) <= ($epsilon + $floating_point_tolerance)
   "
 }
 
@@ -68,7 +69,7 @@ options="$(
   getopt \
     --name "$script_name" \
     --options "vhe:b:f:E:s:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process,force" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -83,6 +84,7 @@ declare fps_epsilon="2"
 declare speed_factor=""
 declare no_audio=FALSE
 declare no_process=FALSE
+declare force=FALSE
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -112,6 +114,7 @@ while [[ "$1" != "--" ]]; do
       echo "  --no-audio                           - remove audio from output videos;"
       echo "  --no-process                         - don't process videos," \
         "only search for them and check their FPS."
+      echo "  --force                              - process every video regardless of FPS check."
       echo
       echo "Arguments:"
       echo "  <path>                               - base path to original videos" \
@@ -144,6 +147,9 @@ while [[ "$1" != "--" ]]; do
       ;;
     "--no-process")
       no_process=TRUE
+      ;;
+    "--force")
+      force=TRUE
       ;;
   esac
 
@@ -194,7 +200,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
 
     log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
+    if [[ $force != TRUE ]] && (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
       log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
       continue
     fi
