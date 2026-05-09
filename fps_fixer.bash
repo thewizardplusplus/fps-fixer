@@ -206,7 +206,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
         continue
       fi
     else
-      log INFO "force processing is enabled; skip FPS check for video $(ansi "$YELLOW" "$video_path")"
+      log WARNING "force processing is enabled; skip FPS check for video $(ansi "$YELLOW" "$video_path")"
     fi
 
     if [[ $no_process == TRUE ]]; then
