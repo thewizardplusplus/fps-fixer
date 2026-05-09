@@ -69,7 +69,7 @@ options="$(
   getopt \
     --name "$script_name" \
     --options "vhe:b:f:E:Fs:" \
-    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process,force" \
+    --longoptions "version,help,extension:,base-path:,fps:,epsilon:,force,speed-factor:,no-audio,no-process" \
     -- "$@"
 )"
 if [[ $? != 0 ]]; then
@@ -81,10 +81,10 @@ declare video_extension="mp4"
 declare fixed_video_base_path="./fixed-videos"
 declare target_fps="60"
 declare fps_epsilon="2"
+declare force_processing=FALSE
 declare speed_factor=""
 declare no_audio=FALSE
 declare no_process=FALSE
-declare force=FALSE
 eval set -- "$options"
 while [[ "$1" != "--" ]]; do
   case "$1" in
@@ -139,7 +139,7 @@ while [[ "$1" != "--" ]]; do
       shift # an additional shift for the option parameter
       ;;
     "-F" | "--force")
-      force=TRUE
+      force_processing=TRUE
       ;;
     "-s" | "--speed-factor")
       speed_factor="$2"
@@ -192,19 +192,21 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
     declare video_path="$REPLY"
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
 
-    declare video_fps="$(get_fps "$video_path")"
-    if [[ -z "$video_fps" ]]; then
-      log WARNING "unable to extract FPS from video $(ansi "$YELLOW" "$video_path")"
-      continue
-    fi
+    if [[ $force_processing != TRUE ]]; then
+      declare video_fps="$(get_fps "$video_path")"
+      if [[ -z "$video_fps" ]]; then
+        log WARNING "unable to extract FPS from video $(ansi "$YELLOW" "$video_path")"
+        continue
+      fi
 
-    log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
+      log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if [[ $force != TRUE ]]; then
       if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
         log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
         continue
       fi
+    else
+      log INFO "force processing is enabled; skip FPS check for video $(ansi "$YELLOW" "$video_path")"
     fi
 
     if [[ $no_process == TRUE ]]; then
