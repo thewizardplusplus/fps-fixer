@@ -9,6 +9,7 @@ declare -r RESET="$(tput sgr0)"
 
 # keep this regexp compatible with Bash ERE (the strictest engine used in this script)
 declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
+declare -r FLOATING_POINT_TOLERANCE="0.000001"
 
 function ansi() {
   declare -r code="$1"
@@ -52,12 +53,11 @@ function is_target_fps() {
   declare -r fps="$1"
   declare -r target_fps="$2"
   declare -r epsilon="$3"
-  declare -r floating_point_tolerance="0.000001"
 
   bc <<< "
     define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
-    abs($fps - $target_fps) <= ($epsilon + $floating_point_tolerance)
+    abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
   "
 }
 
@@ -68,7 +68,7 @@ declare options
 options="$(
   getopt \
     --name "$script_name" \
-    --options "vhe:b:f:E:s:" \
+    --options "vhe:b:f:E:Fs:" \
     --longoptions "version,help,extension:,base-path:,fps:,epsilon:,speed-factor:,no-audio,no-process,force" \
     -- "$@"
 )"
@@ -109,12 +109,12 @@ while [[ "$1" != "--" ]]; do
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
         "(default: \"2\");"
+      echo "  -F, --force                          - process every video regardless of FPS check;"
       echo "  -s SPEED, --speed-factor SPEED       - optional acceleration speed factor" \
         "between 0.5 and 2.0 (inclusive);"
       echo "  --no-audio                           - remove audio from output videos;"
       echo "  --no-process                         - don't process videos," \
         "only search for them and check their FPS."
-      echo "  --force                              - process every video regardless of FPS check."
       echo
       echo "Arguments:"
       echo "  <path>                               - base path to original videos" \
@@ -138,6 +138,9 @@ while [[ "$1" != "--" ]]; do
       fps_epsilon="$2"
       shift # an additional shift for the option parameter
       ;;
+    "-F" | "--force")
+      force=TRUE
+      ;;
     "-s" | "--speed-factor")
       speed_factor="$2"
       shift # an additional shift for the option parameter
@@ -147,9 +150,6 @@ while [[ "$1" != "--" ]]; do
       ;;
     "--no-process")
       no_process=TRUE
-      ;;
-    "--force")
-      force=TRUE
       ;;
   esac
 
@@ -200,9 +200,11 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
 
     log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-    if [[ $force != TRUE ]] && (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
-      log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
-      continue
+    if [[ $force != TRUE ]]; then
+      if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
+        log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
+        continue
+      fi
     fi
 
     if [[ $no_process == TRUE ]]; then
