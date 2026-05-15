@@ -49,13 +49,47 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
-@test "speed-factor validation works" {
+@test "--speed-factor abc fails because the value is not numeric" {
   run "$SCRIPT" --speed-factor abc
   [ "$status" -eq 1 ]
+}
 
+@test "--speed-factor 0.49 fails because it is below the allowed range" {
   run "$SCRIPT" --speed-factor 0.49
   [ "$status" -eq 1 ]
+}
 
+@test "--speed-factor 0.5 succeeds" {
+  run "$SCRIPT" --speed-factor 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "--speed-factor 1.5 succeeds" {
+  run "$SCRIPT" --speed-factor 1.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "--speed-factor 2.0 succeeds" {
+  run "$SCRIPT" --speed-factor 2.0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "--speed-factor 2.01 fails because it is above the allowed range" {
+  run "$SCRIPT" --speed-factor 2.01
+  [ "$status" -eq 1 ]
+}
+
+@test "--speed-factor 2 succeeds" {
+  run "$SCRIPT" --speed-factor 2 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "--speed-factor .5 fails because a leading digit is required" {
+  run "$SCRIPT" --speed-factor .5
+  [ "$status" -eq 1 ]
+}
+
+@test "--speed-factor 1,5 succeeds" {
   run "$SCRIPT" --speed-factor 1,5 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 0 ]
 }
