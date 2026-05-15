@@ -27,6 +27,18 @@ teardown() {
   [[ "$output" == *"FPS Fixer, v1.1.0"* ]]
 }
 
+@test "-h exits 0" {
+  run "$SCRIPT" -h
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage:"* ]]
+}
+
+@test "--help exits 0" {
+  run "$SCRIPT" --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage:"* ]]
+}
+
 @test "unknown option exits 1" {
   run "$SCRIPT" --unknown
   [ "$status" -eq 1 ]
