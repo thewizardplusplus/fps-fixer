@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log_file="${FFMPEG_LOG_FILE:-}"
+if [[ -n "$log_file" ]]; then
+  printf '%s\n' "$*" >> "$log_file"
+fi
+
+# probe mode: ffmpeg -i input
+if [[ "$#" -eq 2 && "$1" == "-i" ]]; then
+  input="$2"
+  if [[ "${FFMPEG_PROBE_FAIL_FOR:-}" == "$input" ]]; then
+    echo "mock probe failure" >&2
+    exit 1
+  fi
+
+  fps="${MOCK_FPS_DEFAULT:-60}"
+  if [[ -n "${FFMPEG_FPS_MAP_FILE:-}" && -f "${FFMPEG_FPS_MAP_FILE}" ]]; then
+    mapped="$(awk -F'|' -v k="$input" '$1==k{print $2}' "$FFMPEG_FPS_MAP_FILE" | head -n1)"
+    if [[ -n "$mapped" ]]; then
+      fps="$mapped"
+    fi
+  fi
+  echo "Stream #0:0: Video: h264, yuv420p, ${fps} fps" >&2
+  exit 0
+fi
+
+if [[ -n "${FFMPEG_FAIL_MATCH:-}" && "$*" == *"${FFMPEG_FAIL_MATCH}"* ]]; then
+  echo "mock processing failure" >&2
+  exit 1
+fi
+
+# create output file (last arg)
+out="${!#}"
+mkdir -p "$(dirname "$out")"
+touch "$out"
