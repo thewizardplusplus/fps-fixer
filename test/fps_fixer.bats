@@ -3,16 +3,22 @@
 setup() {
   export REPO_ROOT="$BATS_TEST_DIRNAME/.."
   export SCRIPT="$REPO_ROOT/fps_fixer.bash"
+
   export TMPDIR_TEST="$(mktemp -d)"
-  export PATH="$BATS_TEST_DIRNAME/bin:$PATH"
   export FFMPEG_LOG_FILE="$TMPDIR_TEST/ffmpeg.log"
   export FFMPEG_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
-  : > "$FFMPEG_LOG_FILE"
-  : > "$FFMPEG_FPS_MAP_FILE"
+
+  export PATH="$BATS_TEST_DIRNAME/bin:$PATH"
 }
 
 teardown() {
   rm -rf "$TMPDIR_TEST"
+}
+
+@test "-v exits 0" {
+  run "$SCRIPT" -v
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"FPS Fixer, v1.1.0"* ]]
 }
 
 @test "--version exits 0" {
@@ -21,14 +27,14 @@ teardown() {
   [[ "$output" == *"FPS Fixer, v1.1.0"* ]]
 }
 
-@test "--help exits 0" {
-  run "$SCRIPT" --help
+@test "-h exits 0" {
+  run "$SCRIPT" -h
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage:"* ]]
 }
 
-@test "-h exits 0" {
-  run "$SCRIPT" -h
+@test "--help exits 0" {
+  run "$SCRIPT" --help
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage:"* ]]
 }
