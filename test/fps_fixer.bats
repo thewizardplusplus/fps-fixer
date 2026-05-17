@@ -49,6 +49,11 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
+@test "--s abc fails because the value is not numeric" {
+  run "$SCRIPT" --s abc
+  [ "$status" -eq 1 ]
+}
+
 @test "--speed-factor abc fails because the value is not numeric" {
   run "$SCRIPT" --speed-factor abc
   [ "$status" -eq 1 ]
@@ -57,6 +62,11 @@ teardown() {
 @test "--speed-factor 0.49 fails because it is below the allowed range" {
   run "$SCRIPT" --speed-factor 0.49
   [ "$status" -eq 1 ]
+}
+
+@test "-s 0.5 succeeds" {
+  run "$SCRIPT" -s 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
 }
 
 @test "--speed-factor 0.5 succeeds" {
