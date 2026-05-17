@@ -106,6 +106,28 @@ teardown() {
   ! grep -F -- "-i $TMPDIR_TEST/in/sub/c.mp4" "$FFMPEG_LOG_FILE"
 }
 
+@test "discovery mov with -e" {
+  mkdir -p "$TMPDIR_TEST/in"
+  touch "$TMPDIR_TEST/in/a.mp4" "$TMPDIR_TEST/in/b.mov"
+  printf '%s|50\n' "$TMPDIR_TEST/in/b.mov" > "$FFMPEG_FPS_MAP_FILE"
+
+  run "$SCRIPT" -e "mov" --no-process "$TMPDIR_TEST/in"
+  [ "$status" -eq 0 ]
+  ! grep -F -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/b.mov" "$FFMPEG_LOG_FILE"
+}
+
+@test "discovery mov with --extension" {
+  mkdir -p "$TMPDIR_TEST/in"
+  touch "$TMPDIR_TEST/in/a.mp4" "$TMPDIR_TEST/in/b.mov"
+  printf '%s|50\n' "$TMPDIR_TEST/in/b.mov" > "$FFMPEG_FPS_MAP_FILE"
+
+  run "$SCRIPT" --extension "mov" --no-process "$TMPDIR_TEST/in"
+  [ "$status" -eq 0 ]
+  ! grep -F -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/b.mov" "$FFMPEG_LOG_FILE"
+}
+
 @test "no-process does not create output directory" {
   mkdir -p "$TMPDIR_TEST/in"
   touch "$TMPDIR_TEST/in/v.mp4"
