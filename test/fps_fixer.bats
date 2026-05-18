@@ -136,8 +136,8 @@ teardown() {
   ! grep -F -- "-i $TMPDIR_TEST/in/b.mov" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-i $TMPDIR_TEST/in/fake.mp4" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-i $TMPDIR_TEST/in/video.MP4" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/video" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/video.mp4.backup" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/video" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/video.mp4.backup" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-i $TMPDIR_TEST/in/sub/c.mp4" "$FFMPEG_LOG_FILE"
 }
 
