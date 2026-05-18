@@ -104,15 +104,40 @@ teardown() {
   [ "$status" -eq 0 ]
 }
 
-@test "default discovery only mp4 and no nested" {
-  mkdir -p "$TMPDIR_TEST/in/sub"
-  touch "$TMPDIR_TEST/in/a.mp4" "$TMPDIR_TEST/in/b.mov" "$TMPDIR_TEST/in/sub/c.mp4"
+@test "default discovery only mp4 files and no nested" {
+  mkdir -p "$TMPDIR_TEST/in/fake.mp4" "$TMPDIR_TEST/in/sub"
+  touch \
+    "$TMPDIR_TEST/in/a.mp4" \
+    "$TMPDIR_TEST/in/my video.mp4" \
+    "$TMPDIR_TEST/in/video (1).mp4" \
+    "$TMPDIR_TEST/in/john's video.mp4" \
+    "$TMPDIR_TEST/in/видео.mp4" \
+    "$TMPDIR_TEST/in/my.video.test.mp4" \
+    "$TMPDIR_TEST/in/b.mov" \
+    "$TMPDIR_TEST/in/video.MP4" \
+    "$TMPDIR_TEST/in/video" \
+    "$TMPDIR_TEST/in/video.mp4.backup" \
+    "$TMPDIR_TEST/in/sub/c.mp4"
   printf '%s|50\n' "$TMPDIR_TEST/in/a.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/my video.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/video (1).mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/john's video.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/видео.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/my.video.test.mp4" > "$FFMPEG_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-process "$TMPDIR_TEST/in"
   [ "$status" -eq 0 ]
   grep -F -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/my video.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/video (1).mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/john's video.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/видео.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $TMPDIR_TEST/in/my.video.test.mp4" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-i $TMPDIR_TEST/in/b.mov" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/fake.mp4" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/video.MP4" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/video" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $TMPDIR_TEST/in/video.mp4.backup" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-i $TMPDIR_TEST/in/sub/c.mp4" "$FFMPEG_LOG_FILE"
 }
 
