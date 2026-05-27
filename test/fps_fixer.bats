@@ -15,25 +15,21 @@ teardown() {
   rm -rf "$TMPDIR_TEST"
 }
 
-@test "-v exits 0" {
+@test "-v and --version exit 0" {
   run "$SCRIPT" -v
   [ "$status" -eq 0 ]
   [[ "$output" == *"FPS Fixer, v1.1.0"* ]]
-}
 
-@test "--version exits 0" {
   run "$SCRIPT" --version
   [ "$status" -eq 0 ]
   [[ "$output" == *"FPS Fixer, v1.1.0"* ]]
 }
 
-@test "-h exits 0" {
+@test "-h and --help exit 0" {
   run "$SCRIPT" -h
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage:"* ]]
-}
 
-@test "--help exits 0" {
   run "$SCRIPT" --help
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage:"* ]]
@@ -49,57 +45,66 @@ teardown() {
   [ "$status" -eq 1 ]
 }
 
-@test "--s abc fails because the value is not numeric" {
-  run "$SCRIPT" --s abc
+@test "-s and --speed-factor abc fail because the value is not numeric" {
+  run "$SCRIPT" -s abc
   [ "$status" -eq 1 ]
-}
 
-@test "--speed-factor abc fails because the value is not numeric" {
   run "$SCRIPT" --speed-factor abc
   [ "$status" -eq 1 ]
 }
 
-@test "--speed-factor 0.49 fails because it is below the allowed range" {
+@test "-s and --speed-factor 0.49 fail because it is below the allowed range" {
+  run "$SCRIPT" -s 0.49
+  [ "$status" -eq 1 ]
+
   run "$SCRIPT" --speed-factor 0.49
   [ "$status" -eq 1 ]
 }
 
-@test "-s 0.5 succeeds" {
-  run "$SCRIPT" -s 0.5 --no-process "$TMPDIR_TEST"
-  [ "$status" -eq 0 ]
-}
+@test "-s and --speed-factor 2.01 fail because it is above the allowed range" {
+  run "$SCRIPT" -s 2.01
+  [ "$status" -eq 1 ]
 
-@test "--speed-factor 0.5 succeeds" {
-  run "$SCRIPT" --speed-factor 0.5 --no-process "$TMPDIR_TEST"
-  [ "$status" -eq 0 ]
-}
-
-@test "--speed-factor 1.5 succeeds" {
-  run "$SCRIPT" --speed-factor 1.5 --no-process "$TMPDIR_TEST"
-  [ "$status" -eq 0 ]
-}
-
-@test "--speed-factor 2.0 succeeds" {
-  run "$SCRIPT" --speed-factor 2.0 --no-process "$TMPDIR_TEST"
-  [ "$status" -eq 0 ]
-}
-
-@test "--speed-factor 2.01 fails because it is above the allowed range" {
   run "$SCRIPT" --speed-factor 2.01
   [ "$status" -eq 1 ]
 }
 
-@test "--speed-factor 2 succeeds" {
-  run "$SCRIPT" --speed-factor 2 --no-process "$TMPDIR_TEST"
-  [ "$status" -eq 0 ]
-}
+@test "-s and --speed-factor .5 fail because a leading digit is required" {
+  run "$SCRIPT" -s .5
+  [ "$status" -eq 1 ]
 
-@test "--speed-factor .5 fails because a leading digit is required" {
   run "$SCRIPT" --speed-factor .5
   [ "$status" -eq 1 ]
 }
 
-@test "--speed-factor 1,5 succeeds" {
+@test "-s and --speed-factor successful values pass in no-process mode" {
+  run "$SCRIPT" -s 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --speed-factor 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -s 1.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --speed-factor 1.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -s 2.0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --speed-factor 2.0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -s 2 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --speed-factor 2 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -s 1,5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
   run "$SCRIPT" --speed-factor 1,5 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 0 ]
 }
