@@ -110,40 +110,55 @@ teardown() {
 }
 
 @test "default discovery only mp4 files and no nested" {
-  mkdir -p "$TMPDIR_TEST/in/fake.mp4" "$TMPDIR_TEST/in/sub"
+  declare -r top_level_mp4="$TMPDIR_TEST/in/a.mp4"
+  declare -r top_level_mp4_with_spaces="$TMPDIR_TEST/in/my video.mp4"
+  declare -r top_level_mp4_with_parentheses="$TMPDIR_TEST/in/video (1).mp4"
+  declare -r top_level_mp4_with_apostrophe="$TMPDIR_TEST/in/john's video.mp4"
+  declare -r top_level_mp4_cyrillic="$TMPDIR_TEST/in/видео.mp4"
+  declare -r top_level_mp4_many_dots="$TMPDIR_TEST/in/my.video.test.mp4"
+  declare -r top_level_non_target_mov="$TMPDIR_TEST/in/b.mov"
+  declare -r fake_mp4_directory="$TMPDIR_TEST/in/fake.mp4"
+  declare -r top_level_mp4_uppercase_extension="$TMPDIR_TEST/in/video.MP4"
+  declare -r top_level_no_extension="$TMPDIR_TEST/in/video"
+  declare -r top_level_backup_file="$TMPDIR_TEST/in/video.mp4.backup"
+  declare -r nested_mp4="$TMPDIR_TEST/in/sub/c.mp4"
+
+  mkdir -p "$fake_mp4_directory" "$TMPDIR_TEST/in/sub"
   touch \
-    "$TMPDIR_TEST/in/a.mp4" \
-    "$TMPDIR_TEST/in/my video.mp4" \
-    "$TMPDIR_TEST/in/video (1).mp4" \
-    "$TMPDIR_TEST/in/john's video.mp4" \
-    "$TMPDIR_TEST/in/видео.mp4" \
-    "$TMPDIR_TEST/in/my.video.test.mp4" \
-    "$TMPDIR_TEST/in/b.mov" \
-    "$TMPDIR_TEST/in/video.MP4" \
-    "$TMPDIR_TEST/in/video" \
-    "$TMPDIR_TEST/in/video.mp4.backup" \
-    "$TMPDIR_TEST/in/sub/c.mp4"
-  printf '%s|50\n' "$TMPDIR_TEST/in/a.mp4" > "$FFMPEG_FPS_MAP_FILE"
-  printf '%s|50\n' "$TMPDIR_TEST/in/my video.mp4" > "$FFMPEG_FPS_MAP_FILE"
-  printf '%s|50\n' "$TMPDIR_TEST/in/video (1).mp4" > "$FFMPEG_FPS_MAP_FILE"
-  printf '%s|50\n' "$TMPDIR_TEST/in/john's video.mp4" > "$FFMPEG_FPS_MAP_FILE"
-  printf '%s|50\n' "$TMPDIR_TEST/in/видео.mp4" > "$FFMPEG_FPS_MAP_FILE"
-  printf '%s|50\n' "$TMPDIR_TEST/in/my.video.test.mp4" > "$FFMPEG_FPS_MAP_FILE"
+    "$top_level_mp4" \
+    "$top_level_mp4_with_spaces" \
+    "$top_level_mp4_with_parentheses" \
+    "$top_level_mp4_with_apostrophe" \
+    "$top_level_mp4_cyrillic" \
+    "$top_level_mp4_many_dots" \
+    "$top_level_non_target_mov" \
+    "$top_level_mp4_uppercase_extension" \
+    "$top_level_no_extension" \
+    "$top_level_backup_file" \
+    "$nested_mp4"
+  {
+    printf '%s|50\n' "$top_level_mp4"
+    printf '%s|50\n' "$top_level_mp4_with_spaces"
+    printf '%s|50\n' "$top_level_mp4_with_parentheses"
+    printf '%s|50\n' "$top_level_mp4_with_apostrophe"
+    printf '%s|50\n' "$top_level_mp4_cyrillic"
+    printf '%s|50\n' "$top_level_mp4_many_dots"
+  } > "$FFMPEG_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-process "$TMPDIR_TEST/in"
   [ "$status" -eq 0 ]
-  grep -F -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $TMPDIR_TEST/in/my video.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $TMPDIR_TEST/in/video (1).mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $TMPDIR_TEST/in/john's video.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $TMPDIR_TEST/in/видео.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $TMPDIR_TEST/in/my.video.test.mp4" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/b.mov" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/fake.mp4" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/video.MP4" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/video" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/video.mp4.backup" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-i $TMPDIR_TEST/in/sub/c.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4_with_spaces" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4_with_parentheses" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4_with_apostrophe" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4_cyrillic" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $top_level_mp4_many_dots" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $top_level_non_target_mov" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $fake_mp4_directory" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $top_level_mp4_uppercase_extension" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $top_level_no_extension" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $top_level_backup_file" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-i $nested_mp4" "$FFMPEG_LOG_FILE"
 }
 
 @test "discovery mov with -e" {
