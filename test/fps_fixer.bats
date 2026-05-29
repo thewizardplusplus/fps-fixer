@@ -398,6 +398,16 @@ ffmpeg_processing_call_count() {
   grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
 }
 
+@test "--force skips probe and processes all" {
+  mkdir -p "$TMPDIR_TEST/in"
+  touch "$TMPDIR_TEST/in/a.mp4"
+
+  run "$SCRIPT" --force "$TMPDIR_TEST/in"
+  [ "$status" -eq 0 ]
+  ! grep -x -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+}
+
 @test "--no-audio uses -an and skips optional audio map in processing command" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/a.mp4"
@@ -413,17 +423,6 @@ ffmpeg_processing_call_count() {
   grep -F -- "-an" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
 }
-
-@test "--force skips probe and processes all" {
-  mkdir -p "$TMPDIR_TEST/in"
-  touch "$TMPDIR_TEST/in/a.mp4"
-
-  run "$SCRIPT" --force "$TMPDIR_TEST/in"
-  [ "$status" -eq 0 ]
-  ! grep -x -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-}
-
 
 @test "--speed-factor generates acceleration output" {
   mkdir -p "$TMPDIR_TEST/in"
