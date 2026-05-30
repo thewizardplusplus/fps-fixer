@@ -118,20 +118,21 @@ ffmpeg_processing_call_count() {
 }
 
 @test "default discovery only mp4 files and no nested" {
-  declare -r top_level_mp4="$TMPDIR_TEST/in/a.mp4"
-  declare -r top_level_mp4_with_spaces="$TMPDIR_TEST/in/my video.mp4"
-  declare -r top_level_mp4_with_parentheses="$TMPDIR_TEST/in/video (1).mp4"
-  declare -r top_level_mp4_with_apostrophe="$TMPDIR_TEST/in/john's video.mp4"
-  declare -r top_level_mp4_cyrillic="$TMPDIR_TEST/in/видео.mp4"
-  declare -r top_level_mp4_many_dots="$TMPDIR_TEST/in/my.video.test.mp4"
-  declare -r top_level_non_target_mov="$TMPDIR_TEST/in/b.mov"
-  declare -r fake_mp4_directory="$TMPDIR_TEST/in/fake.mp4"
-  declare -r top_level_mp4_uppercase_extension="$TMPDIR_TEST/in/video.MP4"
-  declare -r top_level_no_extension="$TMPDIR_TEST/in/video"
-  declare -r top_level_backup_file="$TMPDIR_TEST/in/video.mp4.backup"
-  declare -r nested_mp4="$TMPDIR_TEST/in/sub/c.mp4"
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r top_level_mp4="$input_dir/a.mp4"
+  declare -r top_level_mp4_with_spaces="$input_dir/my video.mp4"
+  declare -r top_level_mp4_with_parentheses="$input_dir/video (1).mp4"
+  declare -r top_level_mp4_with_apostrophe="$input_dir/john's video.mp4"
+  declare -r top_level_mp4_cyrillic="$input_dir/видео.mp4"
+  declare -r top_level_mp4_many_dots="$input_dir/my.video.test.mp4"
+  declare -r top_level_non_target_mov="$input_dir/b.mov"
+  declare -r fake_mp4_directory="$input_dir/fake.mp4"
+  declare -r top_level_mp4_uppercase_extension="$input_dir/video.MP4"
+  declare -r top_level_no_extension="$input_dir/video"
+  declare -r top_level_backup_file="$input_dir/video.mp4.backup"
+  declare -r nested_mp4="$input_dir/sub/c.mp4"
 
-  mkdir -p "$fake_mp4_directory" "$TMPDIR_TEST/in/sub"
+  mkdir -p "$fake_mp4_directory" "$input_dir/sub"
   touch \
     "$top_level_mp4" \
     "$top_level_mp4_with_spaces" \
@@ -153,7 +154,7 @@ ffmpeg_processing_call_count() {
     printf '%s|50\n' "$top_level_mp4_many_dots"
   } > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" --no-process "$TMPDIR_TEST/in"
+  run "$SCRIPT" --no-process "$input_dir"
   [ "$status" -eq 0 ]
   grep -F -- "-i $top_level_mp4" "$FFMPEG_LOG_FILE"
   grep -F -- "-i $top_level_mp4_with_spaces" "$FFMPEG_LOG_FILE"
@@ -170,28 +171,30 @@ ffmpeg_processing_call_count() {
 }
 
 @test "discovery mov with -e" {
-  declare -r top_level_non_target_mp4="$TMPDIR_TEST/in/a.mp4"
-  declare -r top_level_target_mov="$TMPDIR_TEST/in/b.mov"
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r top_level_non_target_mp4="$input_dir/a.mp4"
+  declare -r top_level_target_mov="$input_dir/b.mov"
 
-  mkdir -p "$TMPDIR_TEST/in"
+  mkdir -p "$input_dir"
   touch "$top_level_non_target_mp4" "$top_level_target_mov"
   printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" -e "mov" --no-process "$TMPDIR_TEST/in"
+  run "$SCRIPT" -e "mov" --no-process "$input_dir"
   [ "$status" -eq 0 ]
   ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
   grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
 }
 
 @test "discovery mov with --extension" {
-  declare -r top_level_non_target_mp4="$TMPDIR_TEST/in/a.mp4"
-  declare -r top_level_target_mov="$TMPDIR_TEST/in/b.mov"
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r top_level_non_target_mp4="$input_dir/a.mp4"
+  declare -r top_level_target_mov="$input_dir/b.mov"
 
-  mkdir -p "$TMPDIR_TEST/in"
+  mkdir -p "$input_dir"
   touch "$top_level_non_target_mp4" "$top_level_target_mov"
   printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" --extension "mov" --no-process "$TMPDIR_TEST/in"
+  run "$SCRIPT" --extension "mov" --no-process "$input_dir"
   [ "$status" -eq 0 ]
   ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
   grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
@@ -221,7 +224,7 @@ ffmpeg_processing_call_count() {
   [ ! -f "$TMPDIR_TEST/in/fixed-videos/ok.60_fps.mp4" ]
 }
 
-@test "target fps comparison honors default epsilon boundaries" {
+@test "target FPS comparison honors default epsilon boundaries" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r exact_fps_video="$input_dir/exact.mp4"
   declare -r below_within_epsilon_video="$input_dir/below-within.mp4"
@@ -230,13 +233,15 @@ ffmpeg_processing_call_count() {
   declare -r upper_epsilon_boundary_video="$input_dir/upper-boundary.mp4"
   declare -r below_outside_epsilon_video="$input_dir/below-outside.mp4"
   declare -r above_outside_epsilon_video="$input_dir/above-outside.mp4"
-  declare -r exact_fps_fixed_video="$input_dir/fixed-videos/exact.60_fps.mp4"
-  declare -r below_within_epsilon_fixed_video="$input_dir/fixed-videos/below-within.60_fps.mp4"
-  declare -r lower_epsilon_boundary_fixed_video="$input_dir/fixed-videos/lower-boundary.60_fps.mp4"
-  declare -r above_within_epsilon_fixed_video="$input_dir/fixed-videos/above-within.60_fps.mp4"
-  declare -r upper_epsilon_boundary_fixed_video="$input_dir/fixed-videos/upper-boundary.60_fps.mp4"
-  declare -r below_outside_epsilon_fixed_video="$input_dir/fixed-videos/below-outside.60_fps.mp4"
-  declare -r above_outside_epsilon_fixed_video="$input_dir/fixed-videos/above-outside.60_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r exact_fps_fixed_video="$fixed_videos_dir/exact.60_fps.mp4"
+  declare -r below_within_epsilon_fixed_video="$fixed_videos_dir/below-within.60_fps.mp4"
+  declare -r lower_epsilon_boundary_fixed_video="$fixed_videos_dir/lower-boundary.60_fps.mp4"
+  declare -r above_within_epsilon_fixed_video="$fixed_videos_dir/above-within.60_fps.mp4"
+  declare -r upper_epsilon_boundary_fixed_video="$fixed_videos_dir/upper-boundary.60_fps.mp4"
+  declare -r below_outside_epsilon_fixed_video="$fixed_videos_dir/below-outside.60_fps.mp4"
+  declare -r above_outside_epsilon_fixed_video="$fixed_videos_dir/above-outside.60_fps.mp4"
 
   mkdir -p "$input_dir"
   touch \
@@ -272,7 +277,9 @@ ffmpeg_processing_call_count() {
 @test "processing command uses default FPS settings and maps streams" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
-  declare -r fixed_video="$input_dir/fixed-videos/video.60_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
 
   mkdir -p "$input_dir"
   touch "$video"
@@ -289,16 +296,19 @@ ffmpeg_processing_call_count() {
   grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
 }
 
-@test "custom target FPS via short and long options is respected" {
+@test "custom target FPS via -f and --fps is respected" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r target_fps_video="$input_dir/target.mp4"
   declare -r non_target_fps_video="$input_dir/fix.mp4"
-  declare -r target_fps_fixed_video="$input_dir/fixed-videos/target.48_fps.mp4"
-  declare -r non_target_fps_fixed_video="$input_dir/fixed-videos/fix.48_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r target_fps_fixed_video="$fixed_videos_dir/target.48_fps.mp4"
+  declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.48_fps.mp4"
 
   for fps_option in -f --fps; do
     rm -rf "$input_dir"
-    : > "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
+
     mkdir -p "$input_dir"
     touch "$target_fps_video" "$non_target_fps_video"
     {
@@ -316,16 +326,19 @@ ffmpeg_processing_call_count() {
   done
 }
 
-@test "custom epsilon via short and long options is respected" {
+@test "custom epsilon via -E and --epsilon is respected" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r within_epsilon_video="$input_dir/within.mp4"
   declare -r outside_epsilon_video="$input_dir/outside.mp4"
-  declare -r within_epsilon_fixed_video="$input_dir/fixed-videos/within.60_fps.mp4"
-  declare -r outside_epsilon_fixed_video="$input_dir/fixed-videos/outside.60_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r within_epsilon_fixed_video="$fixed_videos_dir/within.60_fps.mp4"
+  declare -r outside_epsilon_fixed_video="$fixed_videos_dir/outside.60_fps.mp4"
 
   for epsilon_option in -E --epsilon; do
     rm -rf "$input_dir"
-    : > "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
+
     mkdir -p "$input_dir"
     touch "$within_epsilon_video" "$outside_epsilon_video"
     {
@@ -346,9 +359,11 @@ ffmpeg_processing_call_count() {
   declare -r dot_fps_video="$input_dir/dot.mp4"
   declare -r comma_fps_video="$input_dir/comma.mp4"
   declare -r non_target_fps_video="$input_dir/fix.mp4"
-  declare -r dot_fps_fixed_video="$input_dir/fixed-videos/dot.59.94_fps.mp4"
-  declare -r comma_fps_fixed_video="$input_dir/fixed-videos/comma.59.94_fps.mp4"
-  declare -r non_target_fps_fixed_video="$input_dir/fixed-videos/fix.59.94_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r dot_fps_fixed_video="$fixed_videos_dir/dot.59.94_fps.mp4"
+  declare -r comma_fps_fixed_video="$fixed_videos_dir/comma.59.94_fps.mp4"
+  declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.59.94_fps.mp4"
 
   mkdir -p "$input_dir"
   touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
@@ -370,7 +385,9 @@ ffmpeg_processing_call_count() {
 @test "only the first FPS match from ffmpeg output is used" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r first_target_fps_video="$input_dir/first-target.mp4"
-  declare -r first_target_fps_fixed_video="$input_dir/fixed-videos/first-target.60_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r first_target_fps_fixed_video="$fixed_videos_dir/first-target.60_fps.mp4"
 
   mkdir -p "$input_dir"
   touch "$first_target_fps_video"
@@ -385,7 +402,9 @@ ffmpeg_processing_call_count() {
 @test "selected extension and base path are used for output path" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mov"
-  declare -r fixed_video="$input_dir/out/video.60_fps.mov"
+
+  declare -r fixed_videos_dir="$input_dir/out"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mov"
 
   mkdir -p "$input_dir"
   touch "$video"
