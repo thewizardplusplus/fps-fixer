@@ -2,7 +2,7 @@
 
 load test_helper
 
-@test "default discovery only mp4 files and no nested" {
+@test "[$(test_file_group)] default discovery only mp4 files and no nested" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r top_level_mp4="$input_dir/a.mp4"
   declare -r top_level_mp4_with_spaces="$input_dir/my video.mp4"
@@ -55,7 +55,7 @@ load test_helper
   ! grep -F -- "-i $nested_mp4" "$FFMPEG_LOG_FILE"
 }
 
-@test "discovery mov with -e" {
+@test "[$(test_file_group)] discovery mov files with -e" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r top_level_non_target_mp4="$input_dir/a.mp4"
   declare -r top_level_target_mov="$input_dir/b.mov"
@@ -70,7 +70,7 @@ load test_helper
   grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
 }
 
-@test "discovery mov with --extension" {
+@test "[$(test_file_group)] discovery mov files with --extension" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r top_level_non_target_mp4="$input_dir/a.mp4"
   declare -r top_level_target_mov="$input_dir/b.mov"

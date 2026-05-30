@@ -2,7 +2,7 @@
 
 load test_helper
 
-@test "target FPS comparison honors default epsilon boundaries" {
+@test "[$(test_file_group)] target FPS comparison honors default epsilon boundaries" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r exact_fps_video="$input_dir/exact.mp4"
   declare -r below_within_epsilon_video="$input_dir/below-within.mp4"
@@ -58,7 +58,7 @@ load test_helper
   grep -F -- "$above_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
 }
 
-@test "custom target FPS via -f and --fps is respected" {
+@test "[$(test_file_group)] custom target FPS via -f and --fps is respected" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r target_fps_video="$input_dir/target.mp4"
   declare -r non_target_fps_video="$input_dir/fix.mp4"
@@ -91,7 +91,7 @@ load test_helper
   done
 }
 
-@test "custom epsilon via -E and --epsilon is respected" {
+@test "[$(test_file_group)] custom FPS epsilon via -E and --epsilon is respected" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r within_epsilon_video="$input_dir/within.mp4"
   declare -r outside_epsilon_video="$input_dir/outside.mp4"
@@ -126,7 +126,7 @@ load test_helper
   done
 }
 
-@test "fractional FPS with dot and comma notation is handled" {
+@test "[$(test_file_group)] fractional FPS with dot and comma notation is handled" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r dot_fps_video="$input_dir/dot.mp4"
   declare -r comma_fps_video="$input_dir/comma.mp4"
@@ -163,7 +163,7 @@ load test_helper
   done
 }
 
-@test "only the first FPS match from ffmpeg output is used" {
+@test "[$(test_file_group)] only the first FPS match from ffmpeg output is used" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r first_target_fps_video="$input_dir/first-target.mp4"
   declare -r first_non_target_fps_video="$input_dir/first-non-target.mp4"

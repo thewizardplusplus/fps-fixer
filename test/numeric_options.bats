@@ -2,7 +2,7 @@
 
 load test_helper
 
-@test "-f and --fps abc fail because the value is not numeric" {
+@test "[$(test_file_group)] -f and --fps abc fail because the value is not numeric" {
   run "$SCRIPT" -f abc --no-process "$TMPDIR_TEST"
   [ "$status" -eq 1 ]
 
@@ -10,7 +10,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-f and --fps .5 fail because a leading digit is required" {
+@test "[$(test_file_group)] -f and --fps .5 fail because a leading digit is required" {
   run "$SCRIPT" -f .5 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 1 ]
 
@@ -18,7 +18,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-f and --fps 0 fail because FPS should be positive" {
+@test "[$(test_file_group)] -f and --fps 0 fail because FPS should be positive" {
   run "$SCRIPT" -f 0 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 1 ]
 
@@ -26,7 +26,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-f and --fps successful values pass in no-process mode" {
+@test "[$(test_file_group)] -f and --fps successful values pass in no-process mode" {
   run "$SCRIPT" -f 60 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 0 ]
 
@@ -46,7 +46,7 @@ load test_helper
   [ "$status" -eq 0 ]
 }
 
-@test "-E and --epsilon abc fail because the value is not numeric" {
+@test "[$(test_file_group)] -E and --epsilon abc fail because the value is not numeric" {
   run "$SCRIPT" -E abc --no-process "$TMPDIR_TEST"
   [ "$status" -eq 1 ]
 
@@ -54,7 +54,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-E and --epsilon .5 fail because a leading digit is required" {
+@test "[$(test_file_group)] -E and --epsilon .5 fail because a leading digit is required" {
   run "$SCRIPT" -E .5 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 1 ]
 
@@ -62,7 +62,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-E and --epsilon successful values pass in no-process mode" {
+@test "[$(test_file_group)] -E and --epsilon successful values pass in no-process mode" {
   run "$SCRIPT" -E 0 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 0 ]
 
@@ -82,7 +82,7 @@ load test_helper
   [ "$status" -eq 0 ]
 }
 
-@test "-s and --speed-factor abc fail because the value is not numeric" {
+@test "[$(test_file_group)] -s and --speed-factor abc fail because the value is not numeric" {
   run "$SCRIPT" -s abc
   [ "$status" -eq 1 ]
 
@@ -90,7 +90,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-s and --speed-factor 0.49 fail because it is below the allowed range" {
+@test "[$(test_file_group)] -s and --speed-factor 0.49 fail because it is below the allowed range" {
   run "$SCRIPT" -s 0.49
   [ "$status" -eq 1 ]
 
@@ -98,7 +98,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-s and --speed-factor 2.01 fail because it is above the allowed range" {
+@test "[$(test_file_group)] -s and --speed-factor 2.01 fail because it is above the allowed range" {
   run "$SCRIPT" -s 2.01
   [ "$status" -eq 1 ]
 
@@ -106,7 +106,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-s and --speed-factor .5 fail because a leading digit is required" {
+@test "[$(test_file_group)] -s and --speed-factor .5 fail because a leading digit is required" {
   run "$SCRIPT" -s .5
   [ "$status" -eq 1 ]
 
@@ -114,7 +114,7 @@ load test_helper
   [ "$status" -eq 1 ]
 }
 
-@test "-s and --speed-factor successful values pass in no-process mode" {
+@test "[$(test_file_group)] -s and --speed-factor successful values pass in no-process mode" {
   run "$SCRIPT" -s 0.5 --no-process "$TMPDIR_TEST"
   [ "$status" -eq 0 ]
 

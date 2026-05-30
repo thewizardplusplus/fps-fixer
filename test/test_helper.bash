@@ -16,3 +16,7 @@ teardown() {
 ffmpeg_processing_call_count() {
   grep -F -- "-filter:v fps=" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
 }
+
+test_file_group() {
+  basename "$BATS_TEST_FILENAME" .bats
+}
