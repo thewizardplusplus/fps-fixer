@@ -367,18 +367,29 @@ ffmpeg_processing_call_count() {
 @test "only the first FPS match from ffmpeg output is used" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r first_target_fps_video="$input_dir/first-target.mp4"
+  declare -r first_non_target_fps_video="$input_dir/first-non-target.mp4"
 
   declare -r fixed_videos_dir="$input_dir/fixed-videos"
   declare -r first_target_fps_fixed_video="$fixed_videos_dir/first-target.60_fps.mp4"
+  declare -r first_non_target_fps_fixed_video="$fixed_videos_dir/first-non-target.60_fps.mp4"
 
   mkdir -p "$input_dir"
-  touch "$first_target_fps_video"
-  printf '%s|60 fps, 50\n' "$first_target_fps_video" > "$FFMPEG_FPS_MAP_FILE"
+  touch "$first_target_fps_video" "$first_non_target_fps_video"
+  {
+    printf '%s|60 fps, 50\n' "$first_target_fps_video"
+    printf '%s|50 fps, 60\n' "$first_non_target_fps_video"
+  } > "$FFMPEG_FPS_MAP_FILE"
 
   run "$SCRIPT" "$input_dir"
   [ "$status" -eq 0 ]
   [ ! -f "$first_target_fps_fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 0 ]
+  [ -f "$first_non_target_fps_fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "$first_non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
 }
 
 @test "selected extension and base path are used for output path" {
