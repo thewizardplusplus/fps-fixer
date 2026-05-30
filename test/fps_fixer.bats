@@ -210,20 +210,6 @@ ffmpeg_processing_call_count() {
   [ ! -d "$TMPDIR_TEST/in/fixed-videos" ]
 }
 
-@test "target fps is skipped; non-target is processed" {
-  mkdir -p "$TMPDIR_TEST/in"
-  touch "$TMPDIR_TEST/in/ok.mp4" "$TMPDIR_TEST/in/fix.mp4"
-  {
-    printf '%s|60\n' "$TMPDIR_TEST/in/ok.mp4"
-    printf '%s|50\n' "$TMPDIR_TEST/in/fix.mp4"
-  } > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" "$TMPDIR_TEST/in"
-  [ "$status" -eq 0 ]
-  [ -f "$TMPDIR_TEST/in/fixed-videos/fix.60_fps.mp4" ]
-  [ ! -f "$TMPDIR_TEST/in/fixed-videos/ok.60_fps.mp4" ]
-}
-
 @test "target FPS comparison honors default epsilon boundaries" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r exact_fps_video="$input_dir/exact.mp4"
@@ -278,28 +264,6 @@ ffmpeg_processing_call_count() {
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$below_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
   grep -F -- "$above_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
-}
-
-@test "processing command uses default FPS settings and maps streams" {
-  declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r video="$input_dir/video.mp4"
-
-  declare -r fixed_videos_dir="$input_dir/fixed-videos"
-  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
-
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" "$input_dir"
-  [ "$status" -eq 0 ]
-  [ -f "$fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
 }
 
 @test "custom target FPS via -f and --fps is respected" {
