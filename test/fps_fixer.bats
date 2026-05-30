@@ -53,6 +53,86 @@ ffmpeg_processing_call_count() {
   [ "$status" -eq 1 ]
 }
 
+@test "-f and --fps abc fail because the value is not numeric" {
+  run "$SCRIPT" -f abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps .5 fail because a leading digit is required" {
+  run "$SCRIPT" -f .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps 0 fail because FPS should be positive" {
+  run "$SCRIPT" -f 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps successful values pass in no-process mode" {
+  run "$SCRIPT" -f 60 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 60 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -f 59.94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 59.94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -f 59,94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 59,94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "-E and --epsilon abc fail because the value is not numeric" {
+  run "$SCRIPT" -E abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --epsilon abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-E and --epsilon .5 fail because a leading digit is required" {
+  run "$SCRIPT" -E .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --epsilon .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-E and --epsilon successful values pass in no-process mode" {
+  run "$SCRIPT" -E 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -E 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -E 0,5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0,5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
 @test "-s and --speed-factor abc fail because the value is not numeric" {
   run "$SCRIPT" -s abc
   [ "$status" -eq 1 ]
@@ -309,26 +389,28 @@ ffmpeg_processing_call_count() {
   declare -r outside_epsilon_fixed_video="$fixed_videos_dir/outside.60_fps.mp4"
 
   for epsilon_option in -E --epsilon; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    for fps_epsilon in 0.5 0,5; do
+      rm -rf "$input_dir"
+      truncate -s 0 "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$within_epsilon_video" "$outside_epsilon_video"
-    {
-      printf '%s|59.5\n' "$within_epsilon_video"
-      printf '%s|59.49\n' "$outside_epsilon_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+      mkdir -p "$input_dir"
+      touch "$within_epsilon_video" "$outside_epsilon_video"
+      {
+        printf '%s|59.5\n' "$within_epsilon_video"
+        printf '%s|59.49\n' "$outside_epsilon_video"
+      } > "$FFMPEG_FPS_MAP_FILE"
 
-    run "$SCRIPT" "$epsilon_option" 0.5 "$input_dir"
-    [ "$status" -eq 0 ]
-    [ ! -f "$within_epsilon_fixed_video" ]
-    [ -f "$outside_epsilon_fixed_video" ]
-    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+      run "$SCRIPT" "$epsilon_option" "$fps_epsilon" "$input_dir"
+      [ "$status" -eq 0 ]
+      [ ! -f "$within_epsilon_fixed_video" ]
+      [ -f "$outside_epsilon_fixed_video" ]
+      [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+      grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+      grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+      grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+      grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+      grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+    done
   done
 }
 
@@ -343,25 +425,30 @@ ffmpeg_processing_call_count() {
   declare -r comma_fps_fixed_video="$fixed_videos_dir/comma.59.94_fps.mp4"
   declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.59.94_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
-  {
-    printf '%s|59.94\n' "$dot_fps_video"
-    printf '%s|59,94\n' "$comma_fps_video"
-    printf '%s|58\n' "$non_target_fps_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+  for target_fps in 59.94 59,94; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
 
-  run "$SCRIPT" --fps 59.94 --epsilon 0 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ ! -f "$dot_fps_fixed_video" ]
-  [ ! -f "$comma_fps_fixed_video" ]
-  [ -f "$non_target_fps_fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    mkdir -p "$input_dir"
+    touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
+    {
+      printf '%s|59.94\n' "$dot_fps_video"
+      printf '%s|59,94\n' "$comma_fps_video"
+      printf '%s|58\n' "$non_target_fps_video"
+    } > "$FFMPEG_FPS_MAP_FILE"
+
+    run "$SCRIPT" --fps "$target_fps" --epsilon 0 "$input_dir"
+    [ "$status" -eq 0 ]
+    [ ! -f "$dot_fps_fixed_video" ]
+    [ ! -f "$comma_fps_fixed_video" ]
+    [ -f "$non_target_fps_fixed_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
+    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+  done
 }
 
 @test "only the first FPS match from ffmpeg output is used" {

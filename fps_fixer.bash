@@ -166,9 +166,28 @@ elif [[ $# > 1 ]]; then
   exit 1
 fi
 
-if [[ $no_process != TRUE ]]; then
-  mkdir --parents "$fixed_video_base_path"
-fi
+{
+  if ! [[ "$target_fps" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
+    log ERROR "incorrect FPS: should be a floating-point number"
+    exit 1
+  fi
+
+  target_fps="${target_fps/,/.}"
+
+  if (( "$(bc <<< "$target_fps <= 0")" )); then
+    log ERROR "incorrect FPS: should be greater than 0"
+    exit 1
+  fi
+}
+
+{
+  if ! [[ "$fps_epsilon" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
+    log ERROR "incorrect FPS epsilon: should be a floating-point number"
+    exit 1
+  fi
+
+  fps_epsilon="${fps_epsilon/,/.}"
+}
 
 if [[ -n "$speed_factor" ]]; then
   if ! [[ "$speed_factor" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
@@ -182,6 +201,10 @@ if [[ -n "$speed_factor" ]]; then
     log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
     exit 1
   fi
+fi
+
+if [[ $no_process != TRUE ]]; then
+  mkdir --parents "$fixed_video_base_path"
 fi
 
 set -o errtrace
