@@ -272,6 +272,12 @@ ffmpeg_processing_call_count() {
   [ -f "$below_outside_epsilon_fixed_video" ]
   [ -f "$above_outside_epsilon_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 2 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "$below_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$above_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
 }
 
 @test "processing command uses default FPS settings and maps streams" {
@@ -322,6 +328,9 @@ ffmpeg_processing_call_count() {
     [ -f "$non_target_fps_fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     grep -F -- "-filter:v fps=48" "$FFMPEG_LOG_FILE"
+    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
     grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
   done
 }
@@ -351,6 +360,11 @@ ffmpeg_processing_call_count() {
     [ ! -f "$within_epsilon_fixed_video" ]
     [ -f "$outside_epsilon_fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -380,6 +394,10 @@ ffmpeg_processing_call_count() {
   [ -f "$non_target_fps_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
   grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
 }
 
 @test "only the first FPS match from ffmpeg output is used" {
@@ -414,6 +432,10 @@ ffmpeg_processing_call_count() {
   [ "$status" -eq 0 ]
   [ -f "$fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
 }
 
@@ -429,7 +451,10 @@ ffmpeg_processing_call_count() {
 
 @test "--no-audio uses -an and skips optional audio map in processing command" {
   declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r video="$input_dir/a.mp4"
+  declare -r video="$input_dir/video.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
 
   mkdir -p "$input_dir"
   touch "$video"
@@ -437,10 +462,14 @@ ffmpeg_processing_call_count() {
 
   run "$SCRIPT" --no-audio "$input_dir"
   [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-  grep -F -- "-an" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "-an" "$FFMPEG_LOG_FILE"
+  grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
 }
 
 @test "--speed-factor generates acceleration output" {
