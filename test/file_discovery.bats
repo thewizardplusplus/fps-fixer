@@ -55,32 +55,22 @@ load test_helper
   ! grep -F -- "-i $nested_mp4" "$FFMPEG_LOG_FILE"
 }
 
-@test "[$(test_file_group)] discovery mov files with -e" {
+@test "[$(test_file_group)] discovery mov files with -e and --extension" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r top_level_non_target_mp4="$input_dir/a.mp4"
   declare -r top_level_target_mov="$input_dir/b.mov"
 
-  mkdir -p "$input_dir"
-  touch "$top_level_non_target_mp4" "$top_level_target_mov"
-  printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
+  for extension_option in -e --extension; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
 
-  run "$SCRIPT" -e "mov" --no-process "$input_dir"
-  [ "$status" -eq 0 ]
-  ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
-}
+    mkdir -p "$input_dir"
+    touch "$top_level_non_target_mp4" "$top_level_target_mov"
+    printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
 
-@test "[$(test_file_group)] discovery mov files with --extension" {
-  declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r top_level_non_target_mp4="$input_dir/a.mp4"
-  declare -r top_level_target_mov="$input_dir/b.mov"
-
-  mkdir -p "$input_dir"
-  touch "$top_level_non_target_mp4" "$top_level_target_mov"
-  printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" --extension "mov" --no-process "$input_dir"
-  [ "$status" -eq 0 ]
-  ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
+    run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
+    [ "$status" -eq 0 ]
+    ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
+  done
 }
