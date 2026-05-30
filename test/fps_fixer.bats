@@ -389,26 +389,28 @@ ffmpeg_processing_call_count() {
   declare -r outside_epsilon_fixed_video="$fixed_videos_dir/outside.60_fps.mp4"
 
   for epsilon_option in -E --epsilon; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    for fps_epsilon in 0.5 0,5; do
+      rm -rf "$input_dir"
+      truncate -s 0 "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$within_epsilon_video" "$outside_epsilon_video"
-    {
-      printf '%s|59.5\n' "$within_epsilon_video"
-      printf '%s|59.49\n' "$outside_epsilon_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+      mkdir -p "$input_dir"
+      touch "$within_epsilon_video" "$outside_epsilon_video"
+      {
+        printf '%s|59.5\n' "$within_epsilon_video"
+        printf '%s|59.49\n' "$outside_epsilon_video"
+      } > "$FFMPEG_FPS_MAP_FILE"
 
-    run "$SCRIPT" "$epsilon_option" 0,5 "$input_dir"
-    [ "$status" -eq 0 ]
-    [ ! -f "$within_epsilon_fixed_video" ]
-    [ -f "$outside_epsilon_fixed_video" ]
-    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+      run "$SCRIPT" "$epsilon_option" "$fps_epsilon" "$input_dir"
+      [ "$status" -eq 0 ]
+      [ ! -f "$within_epsilon_fixed_video" ]
+      [ -f "$outside_epsilon_fixed_video" ]
+      [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+      grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+      grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+      grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+      grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+      grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+    done
   done
 }
 
