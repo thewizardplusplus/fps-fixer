@@ -53,6 +53,86 @@ ffmpeg_processing_call_count() {
   [ "$status" -eq 1 ]
 }
 
+@test "-f and --fps abc fail because the value is not numeric" {
+  run "$SCRIPT" -f abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps .5 fail because a leading digit is required" {
+  run "$SCRIPT" -f .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps 0 fail because FPS should be positive" {
+  run "$SCRIPT" -f 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --fps 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-f and --fps successful values pass in no-process mode" {
+  run "$SCRIPT" -f 60 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 60 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -f 59.94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 59.94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -f 59,94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --fps 59,94 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
+@test "-E and --epsilon abc fail because the value is not numeric" {
+  run "$SCRIPT" -E abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --epsilon abc --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-E and --epsilon .5 fail because a leading digit is required" {
+  run "$SCRIPT" -E .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+
+  run "$SCRIPT" --epsilon .5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 1 ]
+}
+
+@test "-E and --epsilon successful values pass in no-process mode" {
+  run "$SCRIPT" -E 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -E 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0.5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" -E 0,5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+
+  run "$SCRIPT" --epsilon 0,5 --no-process "$TMPDIR_TEST"
+  [ "$status" -eq 0 ]
+}
+
 @test "-s and --speed-factor abc fail because the value is not numeric" {
   run "$SCRIPT" -s abc
   [ "$status" -eq 1 ]
@@ -319,7 +399,7 @@ ffmpeg_processing_call_count() {
       printf '%s|59.49\n' "$outside_epsilon_video"
     } > "$FFMPEG_FPS_MAP_FILE"
 
-    run "$SCRIPT" "$epsilon_option" 0.5 "$input_dir"
+    run "$SCRIPT" "$epsilon_option" 0,5 "$input_dir"
     [ "$status" -eq 0 ]
     [ ! -f "$within_epsilon_fixed_video" ]
     [ -f "$outside_epsilon_fixed_video" ]
@@ -351,7 +431,7 @@ ffmpeg_processing_call_count() {
     printf '%s|58\n' "$non_target_fps_video"
   } > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" --fps 59.94 --epsilon 0 "$input_dir"
+  run "$SCRIPT" --fps 59,94 --epsilon 0 "$input_dir"
   [ "$status" -eq 0 ]
   [ ! -f "$dot_fps_fixed_video" ]
   [ ! -f "$comma_fps_fixed_video" ]

@@ -166,6 +166,23 @@ elif [[ $# > 1 ]]; then
   exit 1
 fi
 
+if ! [[ "$target_fps" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
+  log ERROR "incorrect FPS: should be a floating-point number"
+  exit 1
+fi
+target_fps="${target_fps/,/.}"
+
+if (( "$(bc <<< "$target_fps <= 0")" )); then
+  log ERROR "incorrect FPS: should be greater than 0"
+  exit 1
+fi
+
+if ! [[ "$fps_epsilon" =~ ^$DECIMAL_NUMBER_REGEXP$ ]]; then
+  log ERROR "incorrect FPS epsilon: should be a floating-point number"
+  exit 1
+fi
+fps_epsilon="${fps_epsilon/,/.}"
+
 if [[ $no_process != TRUE ]]; then
   mkdir --parents "$fixed_video_base_path"
 fi
