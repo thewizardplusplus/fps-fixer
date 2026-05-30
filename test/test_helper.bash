@@ -1,0 +1,18 @@
+setup() {
+  export REPO_ROOT="$BATS_TEST_DIRNAME/.."
+  export SCRIPT="$REPO_ROOT/fps_fixer.bash"
+
+  export TMPDIR_TEST="$(mktemp -d)"
+  export FFMPEG_LOG_FILE="$TMPDIR_TEST/ffmpeg.log"
+  export FFMPEG_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
+
+  export PATH="$BATS_TEST_DIRNAME/bin:$PATH"
+}
+
+teardown() {
+  rm -rf "$TMPDIR_TEST"
+}
+
+ffmpeg_processing_call_count() {
+  grep -F -- "-filter:v fps=" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
+}
