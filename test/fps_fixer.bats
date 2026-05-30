@@ -423,25 +423,30 @@ ffmpeg_processing_call_count() {
   declare -r comma_fps_fixed_video="$fixed_videos_dir/comma.59.94_fps.mp4"
   declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.59.94_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
-  {
-    printf '%s|59.94\n' "$dot_fps_video"
-    printf '%s|59,94\n' "$comma_fps_video"
-    printf '%s|58\n' "$non_target_fps_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+  for target_fps in 59.94 59,94; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
 
-  run "$SCRIPT" --fps 59,94 --epsilon 0 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ ! -f "$dot_fps_fixed_video" ]
-  [ ! -f "$comma_fps_fixed_video" ]
-  [ -f "$non_target_fps_fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    mkdir -p "$input_dir"
+    touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
+    {
+      printf '%s|59.94\n' "$dot_fps_video"
+      printf '%s|59,94\n' "$comma_fps_video"
+      printf '%s|58\n' "$non_target_fps_video"
+    } > "$FFMPEG_FPS_MAP_FILE"
+
+    run "$SCRIPT" --fps "$target_fps" --epsilon 0 "$input_dir"
+    [ "$status" -eq 0 ]
+    [ ! -f "$dot_fps_fixed_video" ]
+    [ ! -f "$comma_fps_fixed_video" ]
+    [ -f "$non_target_fps_fixed_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
+    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+  done
 }
 
 @test "only the first FPS match from ffmpeg output is used" {
