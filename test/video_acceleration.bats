@@ -2,13 +2,15 @@
 
 load test_helper
 
-@test "[$(test_file_group)] --speed-factor and -s accelerate non-target FPS videos after FPS fixing" {
+@test "[$(test_file_group)] -s and --speed-factor accelerate non-target FPS videos after FPS fixing" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
-  declare -r fixed_video="$input_dir/fixed-videos/video.60_fps.mp4"
-  declare -r accelerated_video="$input_dir/fixed-videos/video.60_fps.1.5x.mp4"
 
-  for speed_option in --speed-factor -s; do
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
+
+  for speed_option in -s --speed-factor; do
     rm -rf "$input_dir"
     truncate -s 0 "$FFMPEG_LOG_FILE"
 
@@ -37,46 +39,60 @@ load test_helper
   done
 }
 
-@test "[$(test_file_group)] --speed-factor skips already target FPS videos without --force and does not accelerate" {
+@test "[$(test_file_group)] -s and --speed-factor skip already target FPS videos without --force and do not accelerate" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
-  declare -r fixed_video="$input_dir/fixed-videos/video.60_fps.mp4"
-  declare -r accelerated_video="$input_dir/fixed-videos/video.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
-  run "$SCRIPT" --speed-factor 1.5 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ ! -f "$fixed_video" ]
-  [ ! -f "$accelerated_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 0 ]
-  [ "$(ffmpeg_acceleration_call_count)" -eq 0 ]
-  ! grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE"
+  for speed_option in -s --speed-factor; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
+
+    mkdir -p "$input_dir"
+    touch "$video"
+    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+
+    run "$SCRIPT" "$speed_option" 1.5 "$input_dir"
+    [ "$status" -eq 0 ]
+    [ ! -f "$fixed_video" ]
+    [ ! -f "$accelerated_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 0 ]
+    [ "$(ffmpeg_acceleration_call_count)" -eq 0 ]
+    ! grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE"
+  done
 }
 
-@test "[$(test_file_group)] --speed-factor with --force does not skip already target FPS videos and accelerates" {
+@test "[$(test_file_group)] -s and --speed-factor with --force do not skip already target FPS videos and accelerate" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
-  declare -r fixed_video="$input_dir/fixed-videos/video.60_fps.mp4"
-  declare -r accelerated_video="$input_dir/fixed-videos/video.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
-  run "$SCRIPT" --force --speed-factor 1.5 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ -f "$fixed_video" ]
-  [ -f "$accelerated_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-  declare logged_accelerated_video="./$(realpath --relative-to "." "$accelerated_video")"
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-  grep -F -- "$logged_accelerated_video" "$FFMPEG_LOG_FILE"
+  for speed_option in -s --speed-factor; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
+
+    mkdir -p "$input_dir"
+    touch "$video"
+    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+
+    run "$SCRIPT" "$speed_option" 1.5 --force "$input_dir"
+    [ "$status" -eq 0 ]
+    [ -f "$fixed_video" ]
+    [ -f "$accelerated_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+    declare logged_accelerated_video="./$(realpath --relative-to "." "$accelerated_video")"
+    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+    grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
+    grep -F -- "$logged_accelerated_video" "$FFMPEG_LOG_FILE"
+  done
 }
 
 @test "[$(test_file_group)] acceleration with audio uses video and audio filters and maps both outputs" {
@@ -98,13 +114,15 @@ load test_helper
 @test "[$(test_file_group)] acceleration with --no-audio maps only video and disables audio" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
-  declare -r accelerated_video="$input_dir/fixed-videos/video.60_fps.1.5x.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
   mkdir -p "$input_dir"
   touch "$video"
   printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" --speed-factor 1.5 --no-audio "$input_dir"
+  run "$SCRIPT" -s 1.5 --no-audio "$input_dir"
   [ "$status" -eq 0 ]
   [ -f "$accelerated_video" ]
   [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
