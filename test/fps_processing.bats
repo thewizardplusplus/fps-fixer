@@ -54,8 +54,8 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$below_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
-  grep -F -- "$above_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_command_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_command_path "$above_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "[$(test_file_group)] custom target FPS via -f and --fps is respected" {
@@ -87,7 +87,7 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -121,7 +121,7 @@ load test_helper
       grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-      grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_command_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
     done
   done
 }
@@ -159,7 +159,7 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -188,5 +188,5 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$first_non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_command_path "$first_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
 }

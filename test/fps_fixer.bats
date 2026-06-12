@@ -31,7 +31,7 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "--force skips probe and processes all" {
@@ -64,7 +64,7 @@ load test_helper
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "-an" "$FFMPEG_LOG_FILE"
-  grep -F -- "$fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "--speed-factor generates acceleration output" {

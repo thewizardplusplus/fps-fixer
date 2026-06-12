@@ -24,12 +24,10 @@ load test_helper
     [ -f "$accelerated_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-    declare logged_fixed_video="./$(realpath --relative-to "." "$fixed_video")"
-    declare logged_accelerated_video="./$(realpath --relative-to "." "$accelerated_video")"
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $logged_fixed_video" "$FFMPEG_LOG_FILE"
-    grep -F -- "$logged_accelerated_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
 
     declare fps_fix_line
     declare acceleration_line
@@ -88,10 +86,9 @@ load test_helper
     [ -f "$accelerated_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-    declare logged_accelerated_video="./$(realpath --relative-to "." "$accelerated_video")"
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "$logged_accelerated_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
