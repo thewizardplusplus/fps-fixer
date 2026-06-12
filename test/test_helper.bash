@@ -13,8 +13,16 @@ teardown() {
   rm -rf "$TMPDIR_TEST"
 }
 
+ffmpeg_command_path() {
+  printf './%s\n' "$(realpath --relative-to "." "$1")"
+}
+
 ffmpeg_processing_call_count() {
   grep -F -- "-filter:v fps=" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
+}
+
+ffmpeg_acceleration_call_count() {
+  grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
 }
 
 test_file_group() {
