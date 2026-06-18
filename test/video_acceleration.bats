@@ -32,21 +32,15 @@ load test_helper
     [ -f "$non_target_fps_accelerated_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-    declare non_target_fps_fixed_command_path="$(ffmpeg_command_path "$non_target_fps_fixed_video")"
-    declare non_target_fps_accelerated_command_path="$(ffmpeg_command_path "$non_target_fps_accelerated_video")"
-    declare target_fps_fixed_command_path="$(ffmpeg_command_path "$target_fps_fixed_video")"
-    declare target_fps_accelerated_command_path="$(ffmpeg_command_path "$target_fps_accelerated_video")"
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $non_target_fps_fixed_command_path" "$FFMPEG_LOG_FILE"
-    grep -F -- "$non_target_fps_accelerated_command_path" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "$target_fps_fixed_command_path" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "$target_fps_accelerated_command_path" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$non_target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(ffmpeg_command_path "$target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(ffmpeg_command_path "$target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
 
-    declare fps_fix_line
-    declare acceleration_line
-    fps_fix_line="$(grep -nF -- "-filter:v fps=60" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
-    acceleration_line="$(grep -nF -- "-filter_complex" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
+    declare fps_fix_line="$(grep -nF -- "-filter:v fps=60" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
+    declare acceleration_line="$(grep -nF -- "-filter_complex" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
     [ "$fps_fix_line" -lt "$acceleration_line" ]
   done
 }
@@ -75,8 +69,7 @@ load test_helper
     [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    declare accelerated_command_path="$(ffmpeg_command_path "$accelerated_video")"
-    grep -F -- "$accelerated_command_path" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
