@@ -35,11 +35,11 @@ load test_helper
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
     grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "$(ffmpeg_command_path "$target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "$(ffmpeg_command_path "$target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$non_target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(ffmpeg_log_path "$target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(ffmpeg_log_path "$target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$non_target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
 
     declare fps_fix_line="$(ffmpeg_log_line_number "-filter:v fps=60")"
     declare fps_acceleration_line="$(ffmpeg_log_line_number "-filter_complex")"
@@ -74,9 +74,9 @@ load test_helper
       grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
       grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
       grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
-      grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-      grep -F -- "-i $(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-      grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "-i $(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
     done
   done
 }
@@ -108,8 +108,8 @@ load test_helper
     ! grep -F -- "atempo" "$FFMPEG_LOG_FILE"
     grep -F -- "-map [v] -an" "$FFMPEG_LOG_FILE"
     ! grep -F -- "-map [a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
 }

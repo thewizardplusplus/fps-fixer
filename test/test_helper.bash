@@ -17,8 +17,12 @@ test_file_group() {
   basename "$BATS_TEST_FILENAME" .bats
 }
 
-ffmpeg_command_path() {
+ffmpeg_log_path() {
   printf './%s\n' "$(realpath --relative-to "." "$1")"
+}
+
+ffmpeg_log_line_number() {
+  grep -nF -- "$1" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1
 }
 
 ffmpeg_processing_call_count() {
@@ -27,8 +31,4 @@ ffmpeg_processing_call_count() {
 
 ffmpeg_acceleration_call_count() {
   grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
-}
-
-ffmpeg_log_line_number() {
-  grep -nF -- "$1" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1
 }
