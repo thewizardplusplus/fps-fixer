@@ -34,16 +34,6 @@ load test_helper
   grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
-@test "--force skips probe and processes all" {
-  mkdir -p "$TMPDIR_TEST/in"
-  touch "$TMPDIR_TEST/in/a.mp4"
-
-  run "$SCRIPT" --force "$TMPDIR_TEST/in"
-  [ "$status" -eq 0 ]
-  ! grep -x -- "-i $TMPDIR_TEST/in/a.mp4" "$FFMPEG_LOG_FILE"
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-}
-
 @test "--no-audio uses -an and skips optional audio map in processing command" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"

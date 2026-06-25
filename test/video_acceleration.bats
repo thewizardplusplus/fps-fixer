@@ -47,7 +47,7 @@ load test_helper
   done
 }
 
-@test "[$(test_file_group)] -s and --speed-factor with --force do not skip already target FPS videos and accelerate" {
+@test "[$(test_file_group)] -s and --speed-factor with --force do not skip already target FPS videos" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
 
@@ -56,22 +56,28 @@ load test_helper
   declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
   for speed_option in -s --speed-factor; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    for force_option in -F --force; do
+      rm -rf "$input_dir"
+      truncate -s 0 "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$video"
-    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+      mkdir -p "$input_dir"
+      touch "$video"
+      printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
 
-    run "$SCRIPT" "$speed_option" 1.5 --force "$input_dir"
-    [ "$status" -eq 0 ]
-    [ -f "$fixed_video" ]
-    [ -f "$accelerated_video" ]
-    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-    grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+      run "$SCRIPT" "$speed_option" 1.5 "$force_option" "$input_dir"
+      [ "$status" -eq 0 ]
+      [ -f "$fixed_video" ]
+      [ -f "$accelerated_video" ]
+      [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+      [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+      ! grep -x -- "-i $video" "$FFMPEG_LOG_FILE" # ensures the standalone probe command is absent
+      grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+      grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
+      grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "-i $(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+    done
   done
 }
 
