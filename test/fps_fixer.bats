@@ -67,17 +67,6 @@ load test_helper
   grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
-@test "--speed-factor generates acceleration output" {
-  mkdir -p "$TMPDIR_TEST/in"
-  touch "$TMPDIR_TEST/in/a.mp4"
-  printf '%s|50\n' "$TMPDIR_TEST/in/a.mp4" > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" --speed-factor 1.5 "$TMPDIR_TEST/in"
-  [ "$status" -eq 0 ]
-  [ -f "$TMPDIR_TEST/in/fixed-videos/a.60_fps.1.5x.mp4" ]
-  grep -F -- "atempo=1.5" "$FFMPEG_LOG_FILE"
-}
-
 @test "probe failure warns and continues" {
   mkdir -p "$TMPDIR_TEST/in"
   touch "$TMPDIR_TEST/in/bad.mp4" "$TMPDIR_TEST/in/good.mp4"

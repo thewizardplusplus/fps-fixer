@@ -34,14 +34,16 @@ load test_helper
     [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_command_path "$non_target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
     ! grep -F -- "$(ffmpeg_command_path "$target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
     ! grep -F -- "$(ffmpeg_command_path "$target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_command_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_command_path "$non_target_fps_accelerated_video")" "$FFMPEG_LOG_FILE"
 
-    declare fps_fix_line="$(grep -nF -- "-filter:v fps=60" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
-    declare acceleration_line="$(grep -nF -- "-filter_complex" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1)"
-    [ "$fps_fix_line" -lt "$acceleration_line" ]
+    declare fps_fix_line="$(ffmpeg_log_line_number "-filter:v fps=60")"
+    declare fps_acceleration_line="$(ffmpeg_log_line_number "-filter_complex")"
+    [ "$fps_fix_line" -lt "$fps_acceleration_line" ]
   done
 }
 
@@ -71,22 +73,6 @@ load test_helper
     grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
     grep -F -- "$(ffmpeg_command_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
-}
-
-@test "[$(test_file_group)] acceleration with audio uses video and audio filters and maps both outputs" {
-  declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r video="$input_dir/video.mp4"
-
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" --speed-factor 1.5 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-  grep -F -- "setpts=PTS/1.5[v]" "$FFMPEG_LOG_FILE"
-  grep -F -- "atempo=1.5[a]" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
 }
 
 @test "[$(test_file_group)] acceleration with --no-audio maps only video and disables audio" {
