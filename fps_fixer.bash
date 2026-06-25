@@ -288,8 +288,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
           -y \
           -i "$fixed_video_path" \
           -filter_complex "[0:v]setpts=PTS/$speed_factor[v]" \
-          -map "[v]" \
-          -an \
+          -map "[v]" -an \
           "$accelerated_video_path"
       fi
       log INFO "accelerated video path: $(ansi "$YELLOW" "$accelerated_video_path")"

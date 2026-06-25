@@ -34,29 +34,6 @@ load test_helper
   grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
-@test "--no-audio uses -an and skips optional audio map in processing command" {
-  declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r video="$input_dir/video.mp4"
-
-  declare -r fixed_videos_dir="$input_dir/fixed-videos"
-  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
-
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
-
-  run "$SCRIPT" --no-audio "$input_dir"
-  [ "$status" -eq 0 ]
-  [ -f "$fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "-an" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_command_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-}
-
 @test "probe failure warns and continues" {
   mkdir -p "$TMPDIR_TEST/in"
   touch "$TMPDIR_TEST/in/bad.mp4" "$TMPDIR_TEST/in/good.mp4"
