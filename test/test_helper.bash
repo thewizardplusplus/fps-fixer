@@ -13,10 +13,22 @@ teardown() {
   rm -rf "$TMPDIR_TEST"
 }
 
+test_file_group() {
+  basename "$BATS_TEST_FILENAME" .bats
+}
+
+ffmpeg_log_path() {
+  printf './%s\n' "$(realpath --relative-to "." "$1")"
+}
+
+ffmpeg_log_line_number() {
+  grep -nF -- "$1" "$FFMPEG_LOG_FILE" | cut -d: -f1 | head -n1
+}
+
 ffmpeg_processing_call_count() {
   grep -F -- "-filter:v fps=" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
 }
 
-test_file_group() {
-  basename "$BATS_TEST_FILENAME" .bats
+ffmpeg_acceleration_call_count() {
+  grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
 }

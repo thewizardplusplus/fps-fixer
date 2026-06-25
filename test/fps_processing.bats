@@ -54,8 +54,8 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$below_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
-  grep -F -- "$above_outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$above_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "[$(test_file_group)] custom target FPS via -f and --fps is respected" {
@@ -87,7 +87,7 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -121,7 +121,7 @@ load test_helper
       grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-      grep -F -- "$outside_epsilon_fixed_video" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(ffmpeg_log_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
     done
   done
 }
@@ -159,7 +159,7 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -188,5 +188,56 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$first_non_target_fps_fixed_video" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$first_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+}
+
+@test "[$(test_file_group)] --force do not skip already target FPS videos" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r video="$input_dir/video.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+
+  for force_option in -F --force; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
+
+    mkdir -p "$input_dir"
+    touch "$video"
+    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+
+    run "$SCRIPT" "$force_option" "$input_dir"
+    [ "$status" -eq 0 ]
+    [ -f "$fixed_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    ! grep -x -- "-i $video" "$FFMPEG_LOG_FILE" # ensures the standalone probe command is absent
+    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  done
+}
+
+@test "[$(test_file_group)] --no-audio maps only video and disables audio" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r video="$input_dir/video.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$video"
+  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+
+  run "$SCRIPT" --no-audio "$input_dir"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "-an" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
