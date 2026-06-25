@@ -54,6 +54,14 @@ Arguments:
 
 - `<path>` &mdash; base path to original videos (default: `.`).
 
+## Testing
+
+The test suite uses [Bats](https://bats-core.readthedocs.io/) to exercise the Bash CLI behavior. After installing Bats, run all tests from the repository root with:
+
+```
+$ bats test
+```
+
 ## License
 
 The MIT License (MIT)
