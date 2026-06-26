@@ -56,7 +56,7 @@ Arguments:
 
 ## Testing
 
-The test suite uses [Bats](https://bats-core.readthedocs.io/) to exercise the Bash CLI behavior. After installing Bats, run all tests from the repository root with:
+The tests are located in the [`test/`](test/) directory. The test suite uses [Bats](https://bats-core.readthedocs.io/) >=1.2.1, <2.0. To run the tests, execute the following command from the repository root:
 
 ```
 $ bats test
