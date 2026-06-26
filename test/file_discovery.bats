@@ -48,18 +48,18 @@ load test_helper
 
     run "$SCRIPT" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_with_spaces")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_with_parentheses")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_with_apostrophe")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_cyrillic")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_many_dots")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_non_target_mov")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_mp4_uppercase_extension")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_no_extension")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_backup_file")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$fake_mp4_dir")" "$FFPROBE_LOG_FILE"
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$nested_mp4")" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_spaces" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_parentheses" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_apostrophe" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_cyrillic" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_many_dots" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mov" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_mp4_uppercase_extension" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_no_extension" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_backup_file" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$fake_mp4_dir" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$nested_mp4" "$FFPROBE_LOG_FILE"
   done
 }
 
@@ -79,7 +79,7 @@ load test_helper
 
     run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    ! grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_non_target_mp4")" "$FFPROBE_LOG_FILE"
-    grep -Fx -- "$(ffprobe_fps_probe_log_path "$top_level_target_mov")" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mp4" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_target_mov" "$FFPROBE_LOG_FILE"
   done
 }
