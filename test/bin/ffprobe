@@ -8,15 +8,15 @@ fi
 
 input="${!#}"
 
-if [[ "${FFPROBE_FAIL_FOR:-}" == "$input" || "${FFMPEG_PROBE_FAIL_FOR:-}" == "$input" ]]; then
+if [[ "${FFPROBE_FAIL_FOR:-}" == "$input" ]]; then
   echo "mock probe failure" >&2
   exit 1
 fi
 
 if [[ "$*" == *"-select_streams v:0"* ]]; then
   fps="${MOCK_FPS_DEFAULT:-60}"
-  if [[ -n "${FFMPEG_FPS_MAP_FILE:-}" && -f "${FFMPEG_FPS_MAP_FILE}" ]]; then
-    mapped="$(awk -F'|' -v k="$input" '$1==k{print $2}' "$FFMPEG_FPS_MAP_FILE" | head -n1)"
+  if [[ -n "${FFPROBE_FPS_MAP_FILE:-}" && -f "${FFPROBE_FPS_MAP_FILE}" ]]; then
+    mapped="$(awk -F'|' -v k="$input" '$1==k{print $2}' "$FFPROBE_FPS_MAP_FILE" | head -n1)"
     if [[ -n "$mapped" ]]; then
       fps="$mapped"
     fi

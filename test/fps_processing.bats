@@ -38,7 +38,7 @@ load test_helper
     printf '%s|62\n' "$upper_epsilon_boundary_video"
     printf '%s|57.99\n' "$below_outside_epsilon_video"
     printf '%s|62.01\n' "$above_outside_epsilon_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+  } > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" "$input_dir"
   [ "$status" -eq 0 ]
@@ -76,7 +76,7 @@ load test_helper
     {
       printf '%s|48\n' "$target_fps_video"
       printf '%s|45\n' "$non_target_fps_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$fps_option" 48 "$input_dir"
     [ "$status" -eq 0 ]
@@ -110,7 +110,7 @@ load test_helper
       {
         printf '%s|59.5\n' "$within_epsilon_video"
         printf '%s|59.49\n' "$outside_epsilon_video"
-      } > "$FFMPEG_FPS_MAP_FILE"
+      } > "$FFPROBE_FPS_MAP_FILE"
 
       run "$SCRIPT" "$epsilon_option" "$fps_epsilon" "$input_dir"
       [ "$status" -eq 0 ]
@@ -147,7 +147,7 @@ load test_helper
       printf '%s|59.94\n' "$dot_fps_video"
       printf '%s|59,94\n' "$comma_fps_video"
       printf '%s|58\n' "$non_target_fps_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" --fps "$target_fps" --epsilon 0 "$input_dir"
     [ "$status" -eq 0 ]
@@ -177,7 +177,7 @@ load test_helper
   {
     printf '%s|30000/1001\n' "$rational_target_fps_video"
     printf '%s|25/1\n' "$rational_non_target_fps_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+  } > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --fps 29.9700299700 --epsilon 0 "$input_dir"
   [ "$status" -eq 0 ]
@@ -200,7 +200,7 @@ load test_helper
 
   mkdir -p "$input_dir"
   touch "$video"
-  printf '%s|0/0\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|0/0\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" "$input_dir"
   [ "$status" -eq 0 ]
@@ -223,7 +223,7 @@ load test_helper
 
     mkdir -p "$input_dir"
     touch "$video"
-    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|60\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$force_option" "$input_dir"
     [ "$status" -eq 0 ]
@@ -247,7 +247,7 @@ load test_helper
 
   mkdir -p "$input_dir"
   touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-audio "$input_dir"
   [ "$status" -eq 0 ]

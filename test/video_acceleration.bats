@@ -22,7 +22,7 @@ load test_helper
     {
       printf '%s|60\n' "$target_fps_video"
       printf '%s|50\n' "$non_target_fps_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$speed_option" 1.5 "$input_dir"
     [ "$status" -eq 0 ]
@@ -63,7 +63,7 @@ load test_helper
 
       mkdir -p "$input_dir"
       touch "$video"
-      printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+      printf '%s|60\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
       run "$SCRIPT" "$speed_option" 1.5 "$force_option" "$input_dir"
       [ "$status" -eq 0 ]
@@ -96,7 +96,7 @@ load test_helper
 
     mkdir -p "$input_dir"
     touch "$video"
-    printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$speed_option" 1.5 --no-audio "$input_dir"
     [ "$status" -eq 0 ]
@@ -125,7 +125,7 @@ load test_helper
 
   mkdir -p "$input_dir"
   touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
   printf './%s|0\n' "$(realpath --canonicalize-missing --relative-to "." "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
 
   run "$SCRIPT" --speed-factor 1.5 "$input_dir"

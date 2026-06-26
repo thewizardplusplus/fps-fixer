@@ -5,7 +5,7 @@ load test_helper
 @test "no-process does not create output directory" {
   mkdir -p "$TMPDIR_TEST/in"
   touch "$TMPDIR_TEST/in/v.mp4"
-  printf '%s|50\n' "$TMPDIR_TEST/in/v.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$TMPDIR_TEST/in/v.mp4" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-process "$TMPDIR_TEST/in"
   [ "$status" -eq 0 ]
@@ -21,7 +21,7 @@ load test_helper
 
   mkdir -p "$input_dir"
   touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --extension mov --base-path out "$input_dir"
   [ "$status" -eq 0 ]
@@ -37,8 +37,8 @@ load test_helper
 @test "probe failure warns and continues" {
   mkdir -p "$TMPDIR_TEST/in"
   touch "$TMPDIR_TEST/in/bad.mp4" "$TMPDIR_TEST/in/good.mp4"
-  export FFMPEG_PROBE_FAIL_FOR="$TMPDIR_TEST/in/bad.mp4"
-  printf '%s|50\n' "$TMPDIR_TEST/in/good.mp4" > "$FFMPEG_FPS_MAP_FILE"
+  export FFPROBE_FAIL_FOR="$TMPDIR_TEST/in/bad.mp4"
+  printf '%s|50\n' "$TMPDIR_TEST/in/good.mp4" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" "$TMPDIR_TEST/in"
   [ "$status" -eq 0 ]

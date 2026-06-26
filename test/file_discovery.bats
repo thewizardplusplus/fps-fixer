@@ -44,7 +44,7 @@ load test_helper
       printf '%s|50\n' "$top_level_mp4_with_apostrophe"
       printf '%s|50\n' "$top_level_mp4_cyrillic"
       printf '%s|50\n' "$top_level_mp4_many_dots"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" --no-process "$input_dir"
     [ "$status" -eq 0 ]
@@ -75,7 +75,7 @@ load test_helper
 
     mkdir -p "$input_dir"
     touch "$top_level_non_target_mp4" "$top_level_target_mov"
-    printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|50\n' "$top_level_target_mov" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
     [ "$status" -eq 0 ]

@@ -42,7 +42,7 @@ function log() {
 function normalize_fps() {
   declare -r fps="$1"
 
-  if [[ "$fps" =~ ^([0-9]+([.,][0-9]+)?)/([0-9]+([.,][0-9]+)?)$ ]]; then
+  if [[ "$fps" =~ ^($DECIMAL_NUMBER_REGEXP)/($DECIMAL_NUMBER_REGEXP)$ ]]; then
     bc <<< "scale=10; ${BASH_REMATCH[1]/,/.} / ${BASH_REMATCH[3]/,/.}"
   else
     echo "$fps" | sed "s/,/./"
