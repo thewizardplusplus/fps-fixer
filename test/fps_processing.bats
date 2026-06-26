@@ -194,7 +194,9 @@ load test_helper
 @test "[$(test_file_group)] missing ffprobe video FPS metadata skips processing" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/no-fps.mp4"
-  declare -r fixed_video="$input_dir/fixed-videos/no-fps.60_fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/no-fps.60_fps.mp4"
 
   mkdir -p "$input_dir"
   touch "$video"
@@ -217,6 +219,7 @@ load test_helper
   for force_option in -F --force; do
     rm -rf "$input_dir"
     truncate -s 0 "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir"
     touch "$video"
@@ -226,7 +229,7 @@ load test_helper
     [ "$status" -eq 0 ]
     [ -f "$fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    ! grep -x -- "-i $video" "$FFMPEG_LOG_FILE" # ensures the standalone probe command is absent
+    ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone FPS probe command is absent
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"

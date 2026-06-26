@@ -59,6 +59,7 @@ load test_helper
     for force_option in -F --force; do
       rm -rf "$input_dir"
       truncate -s 0 "$FFMPEG_LOG_FILE"
+      truncate -s 0 "$FFPROBE_LOG_FILE"
 
       mkdir -p "$input_dir"
       touch "$video"
@@ -70,7 +71,7 @@ load test_helper
       [ -f "$accelerated_video" ]
       [ "$(ffmpeg_processing_call_count)" -eq 1 ]
       [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-      ! grep -x -- "-i $video" "$FFMPEG_LOG_FILE" # ensures the standalone probe command is absent
+      ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone FPS probe command is absent
       grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
       grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
       grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
@@ -133,8 +134,12 @@ load test_helper
   [ -f "$accelerated_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
   [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
   grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v]" "$FFMPEG_LOG_FILE"
   ! grep -F -- "atempo" "$FFMPEG_LOG_FILE"
   grep -F -- "-map [v] -an" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map [a]" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
 }
