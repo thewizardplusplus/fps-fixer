@@ -113,3 +113,28 @@ load test_helper
     grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
 }
+
+@test "[$(test_file_group)] -s and --speed-factor skips audio filter when accelerated input has no audio" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r video="$input_dir/video.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$video"
+  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|0\n' "$(ffmpeg_log_path "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
+
+  run "$SCRIPT" --speed-factor 1.5 "$input_dir"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ -f "$accelerated_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+  grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v]" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "atempo" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map [v] -an" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "-map [a]" "$FFMPEG_LOG_FILE"
+}

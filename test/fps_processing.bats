@@ -163,32 +163,48 @@ load test_helper
   done
 }
 
-@test "[$(test_file_group)] only the first FPS match from ffmpeg output is used" {
+@test "[$(test_file_group)] rational FPS values from ffprobe are normalized" {
   declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r first_target_fps_video="$input_dir/first-target.mp4"
-  declare -r first_non_target_fps_video="$input_dir/first-non-target.mp4"
+  declare -r rational_target_fps_video="$input_dir/rational-target.mp4"
+  declare -r rational_non_target_fps_video="$input_dir/rational-non-target.mp4"
 
   declare -r fixed_videos_dir="$input_dir/fixed-videos"
-  declare -r first_target_fps_fixed_video="$fixed_videos_dir/first-target.60_fps.mp4"
-  declare -r first_non_target_fps_fixed_video="$fixed_videos_dir/first-non-target.60_fps.mp4"
+  declare -r rational_target_fps_fixed_video="$fixed_videos_dir/rational-target.29.9700299700_fps.mp4"
+  declare -r rational_non_target_fps_fixed_video="$fixed_videos_dir/rational-non-target.29.9700299700_fps.mp4"
 
   mkdir -p "$input_dir"
-  touch "$first_target_fps_video" "$first_non_target_fps_video"
+  touch "$rational_target_fps_video" "$rational_non_target_fps_video"
   {
-    printf '%s|60 fps, 50\n' "$first_target_fps_video"
-    printf '%s|50 fps, 60\n' "$first_non_target_fps_video"
+    printf '%s|30000/1001\n' "$rational_target_fps_video"
+    printf '%s|25/1\n' "$rational_non_target_fps_video"
   } > "$FFMPEG_FPS_MAP_FILE"
 
-  run "$SCRIPT" "$input_dir"
+  run "$SCRIPT" --fps 29.9700299700 --epsilon 0 "$input_dir"
   [ "$status" -eq 0 ]
-  [ ! -f "$first_target_fps_fixed_video" ]
-  [ -f "$first_non_target_fps_fixed_video" ]
+  [ ! -f "$rational_target_fps_fixed_video" ]
+  [ -f "$rational_non_target_fps_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-filter:v fps=29.9700299700" "$FFMPEG_LOG_FILE"
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$first_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(ffmpeg_log_path "$rational_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+}
+
+@test "[$(test_file_group)] missing ffprobe video FPS metadata skips processing" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r video="$input_dir/no-fps.mp4"
+  declare -r fixed_video="$input_dir/fixed-videos/no-fps.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$video"
+  printf '%s|0/0\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+
+  run "$SCRIPT" "$input_dir"
+  [ "$status" -eq 0 ]
+  [ ! -f "$fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 0 ]
+  [[ "$output" == *"unable to extract FPS"* ]]
 }
 
 @test "[$(test_file_group)] --force do not skip already target FPS videos" {

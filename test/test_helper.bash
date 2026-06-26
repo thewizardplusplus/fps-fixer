@@ -5,6 +5,7 @@ setup() {
   export TMPDIR_TEST="$(mktemp -d)"
   export FFMPEG_LOG_FILE="$TMPDIR_TEST/ffmpeg.log"
   export FFMPEG_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
+  export FFPROBE_AUDIO_MAP_FILE="$TMPDIR_TEST/audio-map.txt"
 
   export PATH="$BATS_TEST_DIRNAME/bin:$PATH"
 }
