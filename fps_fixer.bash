@@ -69,32 +69,30 @@ function get_fps() {
 
 function has_audio_stream() {
   declare -r file_path="$1"
-  declare -r audio_stream="$(
+
+  [[ -n "$(
     ffprobe \
       -v error \
       -select_streams a:0 \
       -show_entries stream=index \
       -of csv=p=0 \
       "$file_path"
-  )"
-
-  if [[ -n "$audio_stream" ]]; then
-    echo TRUE
-  else
-    echo FALSE
-  fi
+  )" ]]
 }
 
 function is_target_fps() {
   declare -r fps="$1"
   declare -r target_fps="$2"
   declare -r epsilon="$3"
+  declare -r is_target="$(
+    bc <<< "
+      define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
-  bc <<< "
-    define abs(value) { if (value > 0) { return value; } else { return -value; } }
+      abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
+    "
+  )"
 
-    abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
-  "
+  [[ "$is_target" == 1 ]]
 }
 
 declare -r script_name="$(basename "$0")"
@@ -260,7 +258,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
 
       log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-      if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
+      if is_target_fps "$video_fps" "$target_fps" "$fps_epsilon"; then
         log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
         continue
       fi
@@ -306,7 +304,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
           "$speed_factor" \
           "$video_extension"
       )")"
-      if [[ $no_audio != TRUE && $(has_audio_stream "$fixed_video_path") == TRUE ]]; then
+      if [[ $no_audio != TRUE ]] && has_audio_stream "$fixed_video_path"; then
         ffmpeg \
           -nostdin \
           -loglevel warning \
