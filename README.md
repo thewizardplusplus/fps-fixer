@@ -55,6 +55,14 @@ Arguments:
 
 - `<path>` &mdash; base path to original videos (default: `.`).
 
+## Testing
+
+The tests are located in the [`test/`](test/) directory. The test suite uses [Bats](https://bats-core.readthedocs.io/) >=1.2.1, <2.0. To run the tests, execute the following command from the repository root:
+
+```
+$ bats test
+```
+
 ## License
 
 The MIT License (MIT)
