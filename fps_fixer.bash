@@ -43,7 +43,7 @@ function normalize_fps() {
   declare -r fps="$1"
 
   if [[ "$fps" =~ ^([0-9]+([.,][0-9]+)?)/([0-9]+([.,][0-9]+)?)$ ]]; then
-    awk -v numerator="${BASH_REMATCH[1]/,/.}" -v denominator="${BASH_REMATCH[3]/,/.}" 'BEGIN { printf "%.10f\n", numerator / denominator }'
+    bc <<< "scale=10; ${BASH_REMATCH[1]/,/.} / ${BASH_REMATCH[3]/,/.}"
   else
     echo "$fps" | sed "s/,/./"
   fi
@@ -51,9 +51,7 @@ function normalize_fps() {
 
 function get_fps() {
   declare -r file_path="$1"
-  declare fps=""
-
-  fps="$(
+  declare -r fps="$(
     ffprobe \
       -v error \
       -select_streams v:0 \
@@ -71,15 +69,20 @@ function get_fps() {
 
 function has_audio_stream() {
   declare -r file_path="$1"
-
-  [[ -n "$(
+  declare -r audio_stream="$(
     ffprobe \
       -v error \
       -select_streams a:0 \
       -show_entries stream=index \
       -of csv=p=0 \
       "$file_path"
-  )" ]]
+  )"
+
+  if [[ -n "$audio_stream" ]]; then
+    echo TRUE
+  else
+    echo FALSE
+  fi
 }
 
 function is_target_fps() {
@@ -87,12 +90,11 @@ function is_target_fps() {
   declare -r target_fps="$2"
   declare -r epsilon="$3"
 
-  awk \
-    -v fps="$fps" \
-    -v target_fps="$target_fps" \
-    -v epsilon="$epsilon" \
-    -v tolerance="$FLOATING_POINT_TOLERANCE" \
-    'BEGIN { diff = fps - target_fps; if (diff < 0) diff = -diff; print (diff <= (epsilon + tolerance)) ? 1 : 0 }'
+  bc <<< "
+    define abs(value) { if (value > 0) { return value; } else { return -value; } }
+
+    abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
+  "
 }
 
 declare -r script_name="$(basename "$0")"
@@ -208,7 +210,7 @@ fi
 
   target_fps="${target_fps/,/.}"
 
-  if (( "$(awk -v value="$target_fps" 'BEGIN { print (value <= 0) ? 1 : 0 }')" )); then
+  if (( "$(bc <<< "$target_fps <= 0")" )); then
     log ERROR "incorrect FPS: should be greater than 0"
     exit 1
   fi
@@ -231,7 +233,7 @@ if [[ -n "$speed_factor" ]]; then
 
   speed_factor="${speed_factor/,/.}"
 
-  if (( "$(awk -v value="$speed_factor" 'BEGIN { print (value < 0.5 || value > 2.0) ? 1 : 0 }')" )); then
+  if (( "$(bc <<< "$speed_factor < 0.5 || $speed_factor > 2.0")" )); then
     log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
     exit 1
   fi
@@ -304,7 +306,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
           "$speed_factor" \
           "$video_extension"
       )")"
-      if [[ $no_audio != TRUE ]] && has_audio_stream "$fixed_video_path"; then
+      if [[ $no_audio != TRUE && $(has_audio_stream "$fixed_video_path") == TRUE ]]; then
         ffmpeg \
           -nostdin \
           -loglevel warning \

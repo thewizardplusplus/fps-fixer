@@ -47,18 +47,18 @@ load test_helper
 
     run "$SCRIPT" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    grep -F -- "-i $top_level_mp4" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_spaces" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_parentheses" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_apostrophe" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_cyrillic" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_many_dots" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_non_target_mov" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_mp4_uppercase_extension" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_no_extension" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_backup_file" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $fake_mp4_dir" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $nested_mp4" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_spaces" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_parentheses" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_apostrophe" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4_cyrillic" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4_many_dots" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mov" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_mp4_uppercase_extension" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_no_extension" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_backup_file" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$fake_mp4_dir" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$nested_mp4" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -77,7 +77,7 @@ load test_helper
 
     run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_target_mov" "$FFMPEG_LOG_FILE"
   done
 }
