@@ -4,6 +4,7 @@ setup() {
 
   export TMPDIR_TEST="$(mktemp -d)"
   export FFMPEG_LOG_FILE="$TMPDIR_TEST/ffmpeg.log"
+  export FFPROBE_LOG_FILE="$TMPDIR_TEST/ffprobe.log"
   export FFMPEG_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
   export FFPROBE_AUDIO_MAP_FILE="$TMPDIR_TEST/audio-map.txt"
 
@@ -32,4 +33,11 @@ ffmpeg_processing_call_count() {
 
 ffmpeg_acceleration_call_count() {
   grep -F -- "-filter_complex" "$FFMPEG_LOG_FILE" | wc -l | tr -d " "
+}
+
+
+ffprobe_fps_probe_log_path() {
+  printf '%s %s\n' \
+    '-v error -select_streams v:0 -show_entries stream=avg_frame_rate -of default=noprint_wrappers=1:nokey=1' \
+    "$1"
 }

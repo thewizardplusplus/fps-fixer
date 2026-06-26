@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-log_file="${FFMPEG_LOG_FILE:-}"
+log_file="${FFPROBE_LOG_FILE:-}"
 if [[ -n "$log_file" ]]; then
   printf '%s\n' "$*" >> "$log_file"
 fi
