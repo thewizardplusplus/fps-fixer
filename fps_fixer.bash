@@ -43,7 +43,7 @@ function normalize_fps() {
   declare -r fps="$1"
 
   if [[ "$fps" =~ ^($DECIMAL_NUMBER_REGEXP)/($DECIMAL_NUMBER_REGEXP)$ ]]; then
-    bc <<< "scale=10; ${BASH_REMATCH[1]/,/.} / ${BASH_REMATCH[3]/,/.}"
+    bc <<< "scale = 10; ${BASH_REMATCH[1]/,/.} / ${BASH_REMATCH[3]/,/.}"
   else
     echo "$fps" | sed "s/,/./"
   fi
@@ -51,15 +51,15 @@ function normalize_fps() {
 
 function get_fps() {
   declare -r file_path="$1"
+
   declare -r fps="$(
     ffprobe \
       -v error \
       -select_streams v:0 \
       -show_entries stream=avg_frame_rate \
-      -of default=noprint_wrappers=1:nokey=1 \
+      -of default=nokey=1:noprint_wrappers=1 \
       "$file_path"
   )"
-
   if [[ -z "$fps" || "$fps" == "0/0" ]]; then
     return
   fi
@@ -75,7 +75,7 @@ function has_audio_stream() {
       -v error \
       -select_streams a:0 \
       -show_entries stream=index \
-      -of csv=p=0 \
+      -of csv=print_section=0 \
       "$file_path"
   )" ]]
 }
@@ -84,15 +84,14 @@ function is_target_fps() {
   declare -r fps="$1"
   declare -r target_fps="$2"
   declare -r epsilon="$3"
-  declare -r is_target="$(
+
+  [[ "$(
     bc <<< "
       define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
       abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
     "
-  )"
-
-  [[ "$is_target" == 1 ]]
+  )" == 1 ]]
 }
 
 declare -r script_name="$(basename "$0")"
