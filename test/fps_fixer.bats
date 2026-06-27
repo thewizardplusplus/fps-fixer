@@ -45,3 +45,21 @@ load test_helper
   [[ "$output" == *"unable to extract FPS"* ]]
   [ -f "$TMPDIR_TEST/in/fixed-videos/good.60_fps.mp4" ]
 }
+
+@test "missing video FPS metadata skips processing" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r video="$input_dir/no-fps.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/no-fps.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$video"
+  printf '%s|0/0\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" "$input_dir"
+  [ "$status" -eq 0 ]
+  [ ! -f "$fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 0 ]
+  [[ "$output" == *"unable to extract FPS"* ]]
+}

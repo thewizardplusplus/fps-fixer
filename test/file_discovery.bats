@@ -21,7 +21,6 @@ load test_helper
     declare nested_mp4="$sub_input_dir/c.mp4"
 
     rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
     truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir" "$fake_mp4_dir" "$sub_input_dir"
@@ -70,7 +69,6 @@ load test_helper
 
   for extension_option in -e --extension; do
     rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
     truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir"

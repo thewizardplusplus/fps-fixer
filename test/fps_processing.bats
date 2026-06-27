@@ -163,7 +163,7 @@ load test_helper
   done
 }
 
-@test "[$(test_file_group)] rational FPS values from ffprobe are normalized" {
+@test "[$(test_file_group)] rational FPS values are normalized" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r rational_target_fps_video="$input_dir/rational-target.mp4"
   declare -r rational_non_target_fps_video="$input_dir/rational-non-target.mp4"
@@ -191,24 +191,6 @@ load test_helper
   grep -F -- "$(ffmpeg_log_path "$rational_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
-@test "[$(test_file_group)] missing ffprobe video FPS metadata skips processing" {
-  declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r video="$input_dir/no-fps.mp4"
-
-  declare -r fixed_videos_dir="$input_dir/fixed-videos"
-  declare -r fixed_video="$fixed_videos_dir/no-fps.60_fps.mp4"
-
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|0/0\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
-
-  run "$SCRIPT" "$input_dir"
-  [ "$status" -eq 0 ]
-  [ ! -f "$fixed_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 0 ]
-  [[ "$output" == *"unable to extract FPS"* ]]
-}
-
 @test "[$(test_file_group)] --force do not skip already target FPS videos" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
@@ -229,7 +211,7 @@ load test_helper
     [ "$status" -eq 0 ]
     [ -f "$fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone FPS probe command is absent
+    ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone probe command is absent
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"

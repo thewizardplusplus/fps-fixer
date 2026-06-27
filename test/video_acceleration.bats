@@ -71,7 +71,7 @@ load test_helper
       [ -f "$accelerated_video" ]
       [ "$(ffmpeg_processing_call_count)" -eq 1 ]
       [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-      ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone FPS probe command is absent
+      ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone probe command is absent
       grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
       grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
       grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
@@ -115,7 +115,7 @@ load test_helper
   done
 }
 
-@test "[$(test_file_group)] -s and --speed-factor skips audio filter when accelerated input has no audio" {
+@test "[$(test_file_group)] -s and --speed-factor skips audio filter when accelerated video has no audio" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r video="$input_dir/video.mp4"
 
@@ -123,23 +123,28 @@ load test_helper
   declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
   declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$video"
-  printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
-  printf './%s|FALSE\n' "$(realpath --canonicalize-missing --relative-to "." "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
+  for speed_option in -s --speed-factor; do
+    rm -rf "$input_dir"
+    truncate -s 0 "$FFMPEG_LOG_FILE"
 
-  run "$SCRIPT" --speed-factor 1.5 "$input_dir"
-  [ "$status" -eq 0 ]
-  [ -f "$fixed_video" ]
-  [ -f "$accelerated_video" ]
-  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v]" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "atempo" "$FFMPEG_LOG_FILE"
-  grep -F -- "-map [v] -an" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "-map [a]" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-  grep -F -- "-i $(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+    mkdir -p "$input_dir"
+    touch "$video"
+    printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
+    printf './%s|FALSE\n' "$(realpath --canonicalize-missing --relative-to "." "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
+
+    run "$SCRIPT" "$speed_option" 1.5 "$input_dir"
+    [ "$status" -eq 0 ]
+    [ -f "$fixed_video" ]
+    [ -f "$accelerated_video" ]
+    [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+    [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+    grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+    grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v]" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "atempo" "$FFMPEG_LOG_FILE"
+    grep -F -- "-map [v] -an" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "-map [a]" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "-i $(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(ffmpeg_log_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+  done
 }
