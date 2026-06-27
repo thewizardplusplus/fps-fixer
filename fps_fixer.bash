@@ -8,7 +8,8 @@ declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
 # keep this regexp compatible with Bash ERE (the strictest engine used in this script)
-declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
+declare -r INTEGER_NUMBER_REGEXP='[0-9]+'
+declare -r DECIMAL_NUMBER_REGEXP="$INTEGER_NUMBER_REGEXP([.,]$INTEGER_NUMBER_REGEXP)?"
 declare -r FLOATING_POINT_TOLERANCE="0.000001"
 
 function ansi() {
@@ -39,13 +40,13 @@ function log() {
     1>&2
 }
 
-function normalize_fps() {
-  declare -r fps="$1"
+function normalize_number() {
+  declare -r value="$1"
 
-  if [[ "$fps" =~ ^($DECIMAL_NUMBER_REGEXP)/($DECIMAL_NUMBER_REGEXP)$ ]]; then
-    bc <<< "scale = 10; ${BASH_REMATCH[1]/,/.} / ${BASH_REMATCH[3]/,/.}"
+  if [[ "$value" =~ ^($INTEGER_NUMBER_REGEXP)/($INTEGER_NUMBER_REGEXP)$ ]]; then
+    bc <<< "scale = 10; ${BASH_REMATCH[1]} / ${BASH_REMATCH[2]}"
   else
-    echo "$fps" | sed "s/,/./"
+    echo "${value/,/.}"
   fi
 }
 
@@ -64,7 +65,7 @@ function get_fps() {
     return
   fi
 
-  normalize_fps "$fps"
+  normalize_number "$fps"
 }
 
 function has_audio_stream() {
@@ -205,7 +206,7 @@ fi
     exit 1
   fi
 
-  target_fps="${target_fps/,/.}"
+  target_fps="$(normalize_number "$target_fps")"
 
   if (( "$(bc <<< "$target_fps <= 0")" )); then
     log ERROR "incorrect FPS: should be greater than 0"
@@ -219,7 +220,7 @@ fi
     exit 1
   fi
 
-  fps_epsilon="${fps_epsilon/,/.}"
+  fps_epsilon="$(normalize_number "$fps_epsilon")"
 }
 
 if [[ -n "$speed_factor" ]]; then
@@ -228,7 +229,7 @@ if [[ -n "$speed_factor" ]]; then
     exit 1
   fi
 
-  speed_factor="${speed_factor/,/.}"
+  speed_factor="$(normalize_number "$speed_factor")"
 
   if (( "$(bc <<< "$speed_factor < 0.5 || $speed_factor > 2.0")" )); then
     log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
