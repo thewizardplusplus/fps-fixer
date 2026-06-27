@@ -31,7 +31,7 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "probe failure warns and continues" {

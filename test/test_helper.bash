@@ -19,8 +19,8 @@ test_file_group() {
   basename "$BATS_TEST_FILENAME" .bats
 }
 
-ffmpeg_log_path() {
-  printf './%s\n' "$(realpath --relative-to "." "$1")"
+relative_path() {
+  printf './%s\n' "$(realpath --canonicalize-missing --relative-to "." "$1")"
 }
 
 ffmpeg_log_line_number() {
