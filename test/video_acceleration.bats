@@ -126,7 +126,7 @@ load test_helper
   mkdir -p "$input_dir"
   touch "$video"
   printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
-  printf './%s|0\n' "$(realpath --canonicalize-missing --relative-to "." "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
+  printf './%s|FALSE\n' "$(realpath --canonicalize-missing --relative-to "." "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
 
   run "$SCRIPT" --speed-factor 1.5 "$input_dir"
   [ "$status" -eq 0 ]
