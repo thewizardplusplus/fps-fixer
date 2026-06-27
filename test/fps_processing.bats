@@ -51,7 +51,7 @@ load test_helper
   [ -f "$above_outside_epsilon_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 2 ]
   grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
@@ -84,7 +84,7 @@ load test_helper
     [ -f "$non_target_fps_fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     grep -F -- "-filter:v fps=48" "$FFMPEG_LOG_FILE"
-    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
     grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
@@ -118,7 +118,7 @@ load test_helper
       [ -f "$outside_epsilon_fixed_video" ]
       [ "$(ffmpeg_processing_call_count)" -eq 1 ]
       grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-      grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+      grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
       grep -F -- "$(relative_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
@@ -156,7 +156,7 @@ load test_helper
     [ -f "$non_target_fps_fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     grep -F -- "-filter:v fps=59.94" "$FFMPEG_LOG_FILE"
-    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
     grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
@@ -185,7 +185,7 @@ load test_helper
   [ -f "$rational_non_target_fps_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
   grep -F -- "-filter:v fps=29.9700299700" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$rational_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
@@ -213,7 +213,7 @@ load test_helper
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
     ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone probe command is absent
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-    grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+    grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
     grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
@@ -236,7 +236,7 @@ load test_helper
   [ -f "$fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
   grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "-an" "$FFMPEG_LOG_FILE"

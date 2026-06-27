@@ -28,7 +28,7 @@ load test_helper
   [ -f "$fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
   grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
-  grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
