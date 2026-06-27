@@ -38,7 +38,7 @@ load test_helper
     printf '%s|62\n' "$upper_epsilon_boundary_video"
     printf '%s|57.99\n' "$below_outside_epsilon_video"
     printf '%s|62.01\n' "$above_outside_epsilon_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+  } > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" "$input_dir"
   [ "$status" -eq 0 ]
@@ -54,8 +54,8 @@ load test_helper
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$above_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$above_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "[$(test_file_group)] custom target FPS via -f and --fps is respected" {
@@ -76,7 +76,7 @@ load test_helper
     {
       printf '%s|48\n' "$target_fps_video"
       printf '%s|45\n' "$non_target_fps_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$fps_option" 48 "$input_dir"
     [ "$status" -eq 0 ]
@@ -87,7 +87,7 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -110,7 +110,7 @@ load test_helper
       {
         printf '%s|59.5\n' "$within_epsilon_video"
         printf '%s|59.49\n' "$outside_epsilon_video"
-      } > "$FFMPEG_FPS_MAP_FILE"
+      } > "$FFPROBE_FPS_MAP_FILE"
 
       run "$SCRIPT" "$epsilon_option" "$fps_epsilon" "$input_dir"
       [ "$status" -eq 0 ]
@@ -121,7 +121,7 @@ load test_helper
       grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-      grep -F -- "$(ffmpeg_log_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+      grep -F -- "$(relative_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
     done
   done
 }
@@ -147,7 +147,7 @@ load test_helper
       printf '%s|59.94\n' "$dot_fps_video"
       printf '%s|59,94\n' "$comma_fps_video"
       printf '%s|58\n' "$non_target_fps_video"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" --fps "$target_fps" --epsilon 0 "$input_dir"
     [ "$status" -eq 0 ]
@@ -159,36 +159,36 @@ load test_helper
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_log_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
-@test "[$(test_file_group)] only the first FPS match from ffmpeg output is used" {
+@test "[$(test_file_group)] rational FPS values are normalized" {
   declare -r input_dir="$TMPDIR_TEST/in"
-  declare -r first_target_fps_video="$input_dir/first-target.mp4"
-  declare -r first_non_target_fps_video="$input_dir/first-non-target.mp4"
+  declare -r rational_target_fps_video="$input_dir/rational-target.mp4"
+  declare -r rational_non_target_fps_video="$input_dir/rational-non-target.mp4"
 
   declare -r fixed_videos_dir="$input_dir/fixed-videos"
-  declare -r first_target_fps_fixed_video="$fixed_videos_dir/first-target.60_fps.mp4"
-  declare -r first_non_target_fps_fixed_video="$fixed_videos_dir/first-non-target.60_fps.mp4"
+  declare -r rational_target_fps_fixed_video="$fixed_videos_dir/rational-target.29.9700299700_fps.mp4"
+  declare -r rational_non_target_fps_fixed_video="$fixed_videos_dir/rational-non-target.29.9700299700_fps.mp4"
 
   mkdir -p "$input_dir"
-  touch "$first_target_fps_video" "$first_non_target_fps_video"
+  touch "$rational_target_fps_video" "$rational_non_target_fps_video"
   {
-    printf '%s|60 fps, 50\n' "$first_target_fps_video"
-    printf '%s|50 fps, 60\n' "$first_non_target_fps_video"
-  } > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|30000/1001\n' "$rational_target_fps_video"
+    printf '%s|25/1\n' "$rational_non_target_fps_video"
+  } > "$FFPROBE_FPS_MAP_FILE"
 
-  run "$SCRIPT" "$input_dir"
+  run "$SCRIPT" --fps 29.9700299700 --epsilon 0 "$input_dir"
   [ "$status" -eq 0 ]
-  [ ! -f "$first_target_fps_fixed_video" ]
-  [ -f "$first_non_target_fps_fixed_video" ]
+  [ ! -f "$rational_target_fps_fixed_video" ]
+  [ -f "$rational_non_target_fps_fixed_video" ]
   [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-filter:v fps=29.9700299700" "$FFMPEG_LOG_FILE"
   grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$first_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$rational_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
 @test "[$(test_file_group)] --force do not skip already target FPS videos" {
@@ -201,21 +201,22 @@ load test_helper
   for force_option in -F --force; do
     rm -rf "$input_dir"
     truncate -s 0 "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir"
     touch "$video"
-    printf '%s|60\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|60\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$force_option" "$input_dir"
     [ "$status" -eq 0 ]
     [ -f "$fixed_video" ]
     [ "$(ffmpeg_processing_call_count)" -eq 1 ]
-    ! grep -x -- "-i $video" "$FFMPEG_LOG_FILE" # ensures the standalone probe command is absent
+    ! grep -F -- "$video" "$FFPROBE_LOG_FILE" # ensures the standalone probe command is absent
     grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
     grep -F -- "-fps_mode:v cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
-    grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+    grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
 
@@ -228,7 +229,7 @@ load test_helper
 
   mkdir -p "$input_dir"
   touch "$video"
-  printf '%s|50\n' "$video" > "$FFMPEG_FPS_MAP_FILE"
+  printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-audio "$input_dir"
   [ "$status" -eq 0 ]
@@ -239,5 +240,5 @@ load test_helper
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   ! grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "-an" "$FFMPEG_LOG_FILE"
-  grep -F -- "$(ffmpeg_log_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }

@@ -8,7 +8,8 @@ declare -r MAGENTA="$(tput setaf 4)"
 declare -r RESET="$(tput sgr0)"
 
 # keep this regexp compatible with Bash ERE (the strictest engine used in this script)
-declare -r DECIMAL_NUMBER_REGEXP='[0-9]+([.,][0-9]+)?'
+declare -r INTEGER_NUMBER_REGEXP='[0-9]+'
+declare -r DECIMAL_NUMBER_REGEXP="$INTEGER_NUMBER_REGEXP([.,]$INTEGER_NUMBER_REGEXP)?"
 declare -r FLOATING_POINT_TOLERANCE="0.000001"
 
 function ansi() {
@@ -39,14 +40,45 @@ function log() {
     1>&2
 }
 
+function normalize_number() {
+  declare -r value="$1"
+
+  if [[ "$value" =~ ^($INTEGER_NUMBER_REGEXP)/($INTEGER_NUMBER_REGEXP)$ ]]; then
+    bc <<< "scale = 10; ${BASH_REMATCH[1]} / ${BASH_REMATCH[2]}"
+  else
+    echo "${value/,/.}"
+  fi
+}
+
 function get_fps() {
   declare -r file_path="$1"
 
-  ffmpeg -i "$file_path" 2>&1 \
-    | grep --perl-regexp --only-matching "$DECIMAL_NUMBER_REGEXP\s*(?=fps)" \
-    | sed --regexp-extended "s/\s*$//" \
-    | head --lines 1 \
-    | sed "s/,/./"
+  declare -r fps="$(
+    ffprobe \
+      -v error \
+      -select_streams v:0 \
+      -show_entries stream=avg_frame_rate \
+      -of default=nokey=1:noprint_wrappers=1 \
+      "$file_path"
+  )"
+  if [[ -z "$fps" || "$fps" == "0/0" ]]; then
+    return
+  fi
+
+  normalize_number "$fps"
+}
+
+function has_audio_stream() {
+  declare -r file_path="$1"
+
+  [[ -n "$(
+    ffprobe \
+      -v error \
+      -select_streams a:0 \
+      -show_entries stream=index \
+      -of csv=print_section=0 \
+      "$file_path"
+  )" ]]
 }
 
 function is_target_fps() {
@@ -54,11 +86,13 @@ function is_target_fps() {
   declare -r target_fps="$2"
   declare -r epsilon="$3"
 
-  bc <<< "
-    define abs(value) { if (value > 0) { return value; } else { return -value; } }
+  [[ "$(
+    bc <<< "
+      define abs(value) { if (value > 0) { return value; } else { return -value; } }
 
-    abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
-  "
+      abs($fps - $target_fps) <= ($epsilon + $FLOATING_POINT_TOLERANCE)
+    "
+  )" == 1 ]]
 }
 
 declare -r script_name="$(basename "$0")"
@@ -172,7 +206,7 @@ fi
     exit 1
   fi
 
-  target_fps="${target_fps/,/.}"
+  target_fps="$(normalize_number "$target_fps")"
 
   if (( "$(bc <<< "$target_fps <= 0")" )); then
     log ERROR "incorrect FPS: should be greater than 0"
@@ -186,7 +220,7 @@ fi
     exit 1
   fi
 
-  fps_epsilon="${fps_epsilon/,/.}"
+  fps_epsilon="$(normalize_number "$fps_epsilon")"
 }
 
 if [[ -n "$speed_factor" ]]; then
@@ -195,7 +229,7 @@ if [[ -n "$speed_factor" ]]; then
     exit 1
   fi
 
-  speed_factor="${speed_factor/,/.}"
+  speed_factor="$(normalize_number "$speed_factor")"
 
   if (( "$(bc <<< "$speed_factor < 0.5 || $speed_factor > 2.0")" )); then
     log ERROR "incorrect speed factor: should be in the range [0.5; 2.0]"
@@ -224,7 +258,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
 
       log INFO "video $(ansi "$YELLOW" "$video_path") has $(ansi "$MAGENTA" "$video_fps") FPS"
 
-      if (( "$(is_target_fps "$video_fps" "$target_fps" "$fps_epsilon")" )); then
+      if is_target_fps "$video_fps" "$target_fps" "$fps_epsilon"; then
         log INFO "video $(ansi "$YELLOW" "$video_path") already has the target FPS"
         continue
       fi
@@ -270,7 +304,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
           "$speed_factor" \
           "$video_extension"
       )")"
-      if [[ $no_audio != TRUE ]]; then
+      if [[ $no_audio != TRUE ]] && has_audio_stream "$fixed_video_path"; then
         ffmpeg \
           -nostdin \
           -loglevel warning \

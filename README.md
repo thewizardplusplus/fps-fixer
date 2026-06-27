@@ -23,7 +23,7 @@ The utility for fixing FPS in videos. It also supports speeding up or slowing do
 
 ## Requirements
 
-- [FFmpeg](https://ffmpeg.org/) >=4.4.2, <5.0.
+- [FFmpeg](https://ffmpeg.org/) >=4.4.2, <5.0 (with `ffprobe`).
 - `bc`.
 - GNU tools:
   - `getopt`;

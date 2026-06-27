@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+declare -r log_file="${FFPROBE_LOG_FILE:-}"
+if [[ -n "$log_file" ]]; then
+  printf '%s\n' "$*" >> "$log_file"
+fi
+
+declare -r input="${!#}"
+
+if [[ "${FFPROBE_FAIL_FOR:-}" == "$input" ]]; then
+  echo "mock probe failure" >&2
+  exit 1
+fi
+
+if [[ "$*" == *"-select_streams v:0"* ]]; then
+  declare fps="${MOCK_FPS_DEFAULT:-60}"
+  if [[ -n "${FFPROBE_FPS_MAP_FILE:-}" && -f "${FFPROBE_FPS_MAP_FILE}" ]]; then
+    declare -r mapped_fps="$(
+      awk -F'|' -v k="$input" '$1 == k { print $2 }' "$FFPROBE_FPS_MAP_FILE" \
+        | head -n1
+    )"
+    if [[ -n "$mapped_fps" ]]; then
+      fps="$mapped_fps"
+    fi
+  fi
+  printf '%s\n' "$fps"
+  exit 0
+fi
+
+if [[ "$*" == *"-select_streams a:0"* ]]; then
+  declare audio="${MOCK_AUDIO_DEFAULT:-TRUE}"
+  if [[ -n "${FFPROBE_AUDIO_MAP_FILE:-}" && -f "${FFPROBE_AUDIO_MAP_FILE}" ]]; then
+    declare -r mapped_audio="$(
+      awk -F'|' -v k="$input" '$1 == k { print $2 }' "$FFPROBE_AUDIO_MAP_FILE" \
+        | head -n1
+    )"
+    if [[ -n "$mapped_audio" ]]; then
+      audio="$mapped_audio"
+    fi
+  fi
+  if [[ "$audio" == TRUE ]]; then
+    printf '1\n'
+  fi
+  exit 0
+fi

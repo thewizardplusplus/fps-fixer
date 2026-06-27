@@ -21,7 +21,7 @@ load test_helper
     declare nested_mp4="$sub_input_dir/c.mp4"
 
     rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir" "$fake_mp4_dir" "$sub_input_dir"
     touch \
@@ -43,22 +43,22 @@ load test_helper
       printf '%s|50\n' "$top_level_mp4_with_apostrophe"
       printf '%s|50\n' "$top_level_mp4_cyrillic"
       printf '%s|50\n' "$top_level_mp4_many_dots"
-    } > "$FFMPEG_FPS_MAP_FILE"
+    } > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    grep -F -- "-i $top_level_mp4" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_spaces" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_parentheses" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_with_apostrophe" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_cyrillic" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_mp4_many_dots" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_non_target_mov" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_mp4_uppercase_extension" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_no_extension" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $top_level_backup_file" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $fake_mp4_dir" "$FFMPEG_LOG_FILE"
-    ! grep -F -- "-i $nested_mp4" "$FFMPEG_LOG_FILE"
+    grep -F -- "$top_level_mp4" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_spaces" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_parentheses" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_with_apostrophe" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_cyrillic" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_mp4_many_dots" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mov" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_mp4_uppercase_extension" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_no_extension" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$top_level_backup_file" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$fake_mp4_dir" "$FFPROBE_LOG_FILE"
+    ! grep -F -- "$nested_mp4" "$FFPROBE_LOG_FILE"
   done
 }
 
@@ -69,15 +69,15 @@ load test_helper
 
   for extension_option in -e --extension; do
     rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    truncate -s 0 "$FFPROBE_LOG_FILE"
 
     mkdir -p "$input_dir"
     touch "$top_level_non_target_mp4" "$top_level_target_mov"
-    printf '%s|50\n' "$top_level_target_mov" > "$FFMPEG_FPS_MAP_FILE"
+    printf '%s|50\n' "$top_level_target_mov" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
     [ "$status" -eq 0 ]
-    ! grep -F -- "-i $top_level_non_target_mp4" "$FFMPEG_LOG_FILE"
-    grep -F -- "-i $top_level_target_mov" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$top_level_non_target_mp4" "$FFPROBE_LOG_FILE"
+    grep -F -- "$top_level_target_mov" "$FFPROBE_LOG_FILE"
   done
 }

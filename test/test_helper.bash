@@ -4,7 +4,9 @@ setup() {
 
   export TMPDIR_TEST="$(mktemp -d)"
   export FFMPEG_LOG_FILE="$TMPDIR_TEST/ffmpeg.log"
-  export FFMPEG_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
+  export FFPROBE_LOG_FILE="$TMPDIR_TEST/ffprobe.log"
+  export FFPROBE_FPS_MAP_FILE="$TMPDIR_TEST/fps-map.txt"
+  export FFPROBE_AUDIO_MAP_FILE="$TMPDIR_TEST/audio-map.txt"
 
   export PATH="$BATS_TEST_DIRNAME/bin:$PATH"
 }
@@ -17,8 +19,8 @@ test_file_group() {
   basename "$BATS_TEST_FILENAME" .bats
 }
 
-ffmpeg_log_path() {
-  printf './%s\n' "$(realpath --relative-to "." "$1")"
+relative_path() {
+  printf './%s\n' "$(realpath --canonicalize-missing --relative-to "." "$1")"
 }
 
 ffmpeg_log_line_number() {
