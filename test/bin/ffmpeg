@@ -7,9 +7,13 @@ if [[ -n "$log_file" ]]; then
   printf '%s\n' "$*" >> "$log_file"
 fi
 
-if [[ -n "${FFMPEG_FAIL_MATCH:-}" && "$*" == *"${FFMPEG_FAIL_MATCH}"* ]]; then
-  echo "mock processing failure" >&2
-  exit 1
+if [[ -n "${FFMPEG_FAIL_MATCH_FILE:-}" && -f "${FFMPEG_FAIL_MATCH_FILE}" ]]; then
+  while IFS= read -r fail_match; do
+    if [[ -n "$fail_match" && "$*" == *"$fail_match"* ]]; then
+      echo "mock processing failure" >&2
+      exit 1
+    fi
+  done < "$FFMPEG_FAIL_MATCH_FILE"
 fi
 
 declare -r output_file="${!#}"
