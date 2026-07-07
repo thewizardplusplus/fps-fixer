@@ -242,3 +242,42 @@ load test_helper
   grep -F -- "-an" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
+
+@test "[$(test_file_group)] single-file input writes default output beside the input file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/video.mp4"
+  declare -r sibling_video="$input_dir/sibling.mp4"
+  declare -r fixed_video="$input_dir/fixed-videos/video.60_fps.mp4"
+  declare -r sibling_fixed_video="$input_dir/fixed-videos/sibling.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video" "$sibling_video"
+  {
+    printf '%s|50\n' "$selected_video"
+    printf '%s|50\n' "$sibling_video"
+  } > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" "$selected_video"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ ! -f "$sibling_fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$sibling_video" "$FFMPEG_LOG_FILE"
+}
+
+@test "[$(test_file_group)] single-file input writes custom base path beside the input file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/video.mp4"
+  declare -r fixed_video="$input_dir/out/video.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video"
+  printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" --base-path out "$selected_video"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+}
