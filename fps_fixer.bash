@@ -152,8 +152,9 @@ while [[ "$1" != "--" ]]; do
         "only search for them and check their FPS."
       echo
       echo "Arguments:"
-      echo "  <path>                               - directory containing original videos or a" \
-        "single original video file matching the selected extension (default: \".\")."
+      echo "  <path>                               - directory containing original videos" \
+        "or a single original video file matching the selected extension" \
+        "(default: \".\")."
 
       exit 0
       ;;

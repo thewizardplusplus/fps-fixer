@@ -148,3 +148,42 @@ load test_helper
     grep -F -- "$(relative_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
   done
 }
+
+@test "[$(test_file_group)] single-file input writes accelerated output beside the input file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/video.mp4"
+  declare -r sibling_video="$input_dir/sibling.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
+  declare -r sibling_fixed_video="$fixed_videos_dir/sibling.60_fps.mp4"
+  declare -r sibling_accelerated_video="$fixed_videos_dir/sibling.60_fps.1.5x.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video" "$sibling_video"
+  {
+    printf '%s|50\n' "$selected_video"
+    printf '%s|50\n' "$sibling_video"
+  } > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" --speed-factor 1.5 "$selected_video"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ -f "$accelerated_video" ]
+  [ ! -f "$sibling_fixed_video" ]
+  [ ! -f "$sibling_accelerated_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  [ "$(ffmpeg_acceleration_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-filter_complex [0:v]setpts=PTS/1.5[v];[0:a]atempo=1.5[a]" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map [v] -map [a]" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "-i $(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$sibling_video" "$FFMPEG_LOG_FILE"
+
+  declare fps_fix_line="$(ffmpeg_log_line_number "-filter:v fps=60")"
+  declare fps_acceleration_line="$(ffmpeg_log_line_number "-filter_complex")"
+  [ "$fps_fix_line" -lt "$fps_acceleration_line" ]
+}

@@ -33,3 +33,25 @@ load test_helper
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
+
+@test "single-file input with selected extension and base path writes beside the input file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/video.mov"
+
+  declare -r fixed_videos_dir="$input_dir/out"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mov"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video"
+  printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" --extension mov --base-path out "$selected_video"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+}
