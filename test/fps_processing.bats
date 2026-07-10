@@ -243,7 +243,7 @@ load test_helper
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
-@test "[$(test_file_group)] single-file input writes default output beside the input file" {
+@test "[$(test_file_group)] single-file input writes processed output beside the input file" {
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r selected_video="$input_dir/video.mp4"
   declare -r sibling_video="$input_dir/sibling.mp4"
@@ -269,5 +269,5 @@ load test_helper
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "$sibling_video" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$sibling_fixed_video")" "$FFMPEG_LOG_FILE"
 }

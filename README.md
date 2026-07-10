@@ -45,7 +45,7 @@ Options:
 - `-v`, `--version` &mdash; show the version;
 - `-h`, `--help` &mdash; show the help;
 - `-e EXTENSION`, `--extension EXTENSION` &mdash; video file extension (default: `mp4`);
-- `-b PATH`, `--base-path PATH` &mdash; base path for fixed videos (relative to the input directory, or to the input file's parent directory when `<path>` is a single file; default: `./fixed-videos`);
+- `-b PATH`, `--base-path PATH` &mdash; base path for fixed videos (relative to the input directory or single file's parent directory; default: `./fixed-videos`);
 - `-f FPS`, `--fps FPS` &mdash; target FPS (default: `60`);
 - `-E EPSILON`, `--epsilon EPSILON` &mdash; allowable error when comparing FPS (default: `2`);
 - `-F`, `--force` &mdash; process every video regardless of FPS check;
@@ -55,7 +55,7 @@ Options:
 
 Arguments:
 
-- `<path>` &mdash; directory containing original videos, or a single original video file matching the selected extension (default: `.`).
+- `<path>` &mdash; directory containing original videos or a single original video file (default: `.`).
 
 ## Testing
 

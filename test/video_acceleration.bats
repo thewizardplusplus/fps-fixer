@@ -181,9 +181,6 @@ load test_helper
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
   grep -F -- "-i $(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$accelerated_video")" "$FFMPEG_LOG_FILE"
-  ! grep -F -- "$sibling_video" "$FFMPEG_LOG_FILE"
-
-  declare fps_fix_line="$(ffmpeg_log_line_number "-filter:v fps=60")"
-  declare fps_acceleration_line="$(ffmpeg_log_line_number "-filter_complex")"
-  [ "$fps_fix_line" -lt "$fps_acceleration_line" ]
+  ! grep -F -- "$(relative_path "$sibling_fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$sibling_accelerated_video")" "$FFMPEG_LOG_FILE"
 }

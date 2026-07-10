@@ -153,8 +153,7 @@ while [[ "$1" != "--" ]]; do
       echo
       echo "Arguments:"
       echo "  <path>                               - directory containing original videos" \
-        "or a single original video file matching the selected extension" \
-        "(default: \".\")."
+        "or a single original video file (default: \".\")."
 
       exit 0
       ;;
