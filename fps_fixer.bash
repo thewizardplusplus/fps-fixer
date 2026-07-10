@@ -124,7 +124,7 @@ while [[ "$1" != "--" ]]; do
   case "$1" in
     "-v" | "--version")
       echo "FPS Fixer, v1.1.0"
-      echo "Copyright (C) 2023 thewizardplusplus"
+      echo "Copyright (C) 2023, 2026 thewizardplusplus"
 
       exit 0
       ;;

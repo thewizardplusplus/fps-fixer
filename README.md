@@ -11,6 +11,7 @@ The utility for fixing FPS in videos. It also supports speeding up or slowing do
 - search of videos:
   - filtering by a video file extension;
   - skipping videos with near target FPS;
+  - support a single video file as input;
 - video correction:
   - fixing FPS in videos that have FPS less than or greater than the specified FPS;
   - optional acceleration/deceleration of output videos with a custom speed factor;
@@ -69,4 +70,4 @@ $ bats test
 
 The MIT License (MIT)
 
-Copyright &copy; 2023 thewizardplusplus
+Copyright &copy; 2023, 2026 thewizardplusplus
