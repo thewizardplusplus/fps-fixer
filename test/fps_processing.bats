@@ -54,6 +54,11 @@ load test_helper
   grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$exact_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$below_within_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$lower_epsilon_boundary_fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$above_within_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$upper_epsilon_boundary_fixed_video")" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$below_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$above_outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
 }
@@ -87,6 +92,7 @@ load test_helper
     grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(relative_path "$target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
     grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
@@ -121,6 +127,7 @@ load test_helper
       grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
       grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+      ! grep -F -- "$(relative_path "$within_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
       grep -F -- "$(relative_path "$outside_epsilon_fixed_video")" "$FFMPEG_LOG_FILE"
     done
   done
@@ -159,6 +166,8 @@ load test_helper
     grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
     grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(relative_path "$dot_fps_fixed_video")" "$FFMPEG_LOG_FILE"
+    ! grep -F -- "$(relative_path "$comma_fps_fixed_video")" "$FFMPEG_LOG_FILE"
     grep -F -- "$(relative_path "$non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   done
 }
@@ -188,6 +197,7 @@ load test_helper
   grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
   grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$rational_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$rational_non_target_fps_fixed_video")" "$FFMPEG_LOG_FILE"
 }
 
