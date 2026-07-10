@@ -20,11 +20,11 @@ load test_helper
     declare sub_input_dir="$input_dir/sub"
     declare nested_mp4="$sub_input_dir/c.mp4"
 
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFPROBE_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFPROBE_LOG_FILE"
 
-    mkdir -p "$input_dir" "$fake_mp4_dir" "$sub_input_dir"
-    touch \
+    mkdir -p -- "$input_dir" "$fake_mp4_dir" "$sub_input_dir"
+    touch -- \
       "$top_level_mp4" \
       "$top_level_mp4_with_spaces" \
       "$top_level_mp4_with_parentheses" \
@@ -68,11 +68,11 @@ load test_helper
   declare -r top_level_target_mov="$input_dir/b.mov"
 
   for extension_option in -e --extension; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFPROBE_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFPROBE_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$top_level_non_target_mp4" "$top_level_target_mov"
+    mkdir -p -- "$input_dir"
+    touch -- "$top_level_non_target_mp4" "$top_level_target_mov"
     printf '%s|50\n' "$top_level_target_mov" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$extension_option" "mov" --no-process "$input_dir"
@@ -88,8 +88,8 @@ load test_helper
   declare -r sibling_video="$input_dir/sibling.mp4"
   declare -r non_target_video="$input_dir/selected.mov"
 
-  mkdir -p "$input_dir"
-  touch "$selected_video" "$sibling_video" "$non_target_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$selected_video" "$sibling_video" "$non_target_video"
   printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-process "$selected_video"
@@ -103,8 +103,8 @@ load test_helper
   declare -r input_dir="$TMPDIR_TEST/in"
   declare -r selected_video="$input_dir/selected.mov"
 
-  mkdir -p "$input_dir"
-  touch "$selected_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$selected_video"
   printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-process "$selected_video"

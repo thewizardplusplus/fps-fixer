@@ -21,8 +21,8 @@ load test_helper
   declare -r below_outside_epsilon_fixed_video="$fixed_videos_dir/below-outside.60_fps.mp4"
   declare -r above_outside_epsilon_fixed_video="$fixed_videos_dir/above-outside.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch \
+  mkdir -p -- "$input_dir"
+  touch -- \
     "$exact_fps_video" \
     "$below_within_epsilon_video" \
     "$lower_epsilon_boundary_video" \
@@ -68,11 +68,11 @@ load test_helper
   declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.48_fps.mp4"
 
   for fps_option in -f --fps; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$target_fps_video" "$non_target_fps_video"
+    mkdir -p -- "$input_dir"
+    touch -- "$target_fps_video" "$non_target_fps_video"
     {
       printf '%s|48\n' "$target_fps_video"
       printf '%s|45\n' "$non_target_fps_video"
@@ -102,11 +102,11 @@ load test_helper
 
   for epsilon_option in -E --epsilon; do
     for fps_epsilon in 0.5 0,5; do
-      rm -rf "$input_dir"
-      truncate -s 0 "$FFMPEG_LOG_FILE"
+      rm -rf -- "$input_dir"
+      truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-      mkdir -p "$input_dir"
-      touch "$within_epsilon_video" "$outside_epsilon_video"
+      mkdir -p -- "$input_dir"
+      touch -- "$within_epsilon_video" "$outside_epsilon_video"
       {
         printf '%s|59.5\n' "$within_epsilon_video"
         printf '%s|59.49\n' "$outside_epsilon_video"
@@ -138,11 +138,11 @@ load test_helper
   declare -r non_target_fps_fixed_video="$fixed_videos_dir/fix.59.94_fps.mp4"
 
   for target_fps in 59.94 59,94; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
+    mkdir -p -- "$input_dir"
+    touch -- "$dot_fps_video" "$comma_fps_video" "$non_target_fps_video"
     {
       printf '%s|59.94\n' "$dot_fps_video"
       printf '%s|59,94\n' "$comma_fps_video"
@@ -172,8 +172,8 @@ load test_helper
   declare -r rational_target_fps_fixed_video="$fixed_videos_dir/rational-target.29.9700299700_fps.mp4"
   declare -r rational_non_target_fps_fixed_video="$fixed_videos_dir/rational-non-target.29.9700299700_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$rational_target_fps_video" "$rational_non_target_fps_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$rational_target_fps_video" "$rational_non_target_fps_video"
   {
     printf '%s|30000/1001\n' "$rational_target_fps_video"
     printf '%s|25/1\n' "$rational_non_target_fps_video"
@@ -199,12 +199,12 @@ load test_helper
   declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
 
   for force_option in -F --force; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
-    truncate -s 0 "$FFPROBE_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
+    truncate -s 0 -- "$FFPROBE_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$video"
+    mkdir -p -- "$input_dir"
+    touch -- "$video"
     printf '%s|60\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$force_option" "$input_dir"
@@ -227,8 +227,8 @@ load test_helper
   declare -r fixed_videos_dir="$input_dir/fixed-videos"
   declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$video"
+  mkdir -p -- "$input_dir"
+  touch -- "$video"
   printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
   run "$SCRIPT" --no-audio "$input_dir"
@@ -252,8 +252,8 @@ load test_helper
   declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
   declare -r sibling_fixed_video="$fixed_videos_dir/sibling.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$selected_video" "$sibling_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$selected_video" "$sibling_video"
   {
     printf '%s|50\n' "$selected_video"
     printf '%s|50\n' "$sibling_video"

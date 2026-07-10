@@ -95,7 +95,7 @@ function is_target_fps() {
   )" == 1 ]]
 }
 
-declare -r script_name="$(basename "$0")"
+declare -r script_name="$(basename -- "$0")"
 # it's necessary to separate the declaration and definition of the variable
 # so that the `declare` command doesn't hide an exit code of the defining expression
 declare options
@@ -243,13 +243,13 @@ if [[ -n "$speed_factor" ]]; then
 fi
 
 if [[ $no_process != TRUE ]]; then
-  mkdir --parents "$fixed_video_base_path"
+  mkdir --parents -- "$fixed_video_base_path"
 fi
 
 set -o errtrace
 trap 'log WARNING "unable to process video $(ansi "$YELLOW" "$video_path")"' ERR
 
-find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" \
+find -- "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" \
   | while read -r; do
     declare video_path="$REPLY"
     log INFO "process video $(ansi "$YELLOW" "$video_path")"
@@ -276,9 +276,9 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
       continue
     fi
 
-    declare video_name="$(basename "$video_path")"
+    declare video_name="$(basename -- "$video_path")"
     declare video_name_without_extension="${video_name%.$video_extension}"
-    declare fixed_video_path="./$(realpath --relative-to "." "$(
+    declare fixed_video_path="./$(realpath --relative-to "." -- "$(
       printf \
         "%s/%s.%s_fps.%s" \
         "$fixed_video_base_path" \
@@ -300,7 +300,7 @@ find "$original_video_base_path" -maxdepth 1 -type f -name "*.$video_extension" 
     log INFO "fixed video path: $(ansi "$YELLOW" "$fixed_video_path")"
 
     if [[ -n "$speed_factor" ]]; then
-      declare accelerated_video_path="./$(realpath --relative-to "." "$(
+      declare accelerated_video_path="./$(realpath --relative-to "." -- "$(
         printf \
           "%s/%s.%s_fps.%sx.%s" \
           "$fixed_video_base_path" \

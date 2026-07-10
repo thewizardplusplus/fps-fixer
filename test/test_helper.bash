@@ -14,15 +14,15 @@ setup() {
 }
 
 teardown() {
-  rm -rf "$TMPDIR_TEST"
+  rm -rf -- "$TMPDIR_TEST"
 }
 
 test_file_group() {
-  basename "$BATS_TEST_FILENAME" .bats
+  basename -- "$BATS_TEST_FILENAME" .bats
 }
 
 relative_path() {
-  printf './%s\n' "$(realpath --canonicalize-missing --relative-to "." "$1")"
+  printf './%s\n' "$(realpath --canonicalize-missing --relative-to "." -- "$1")"
 }
 
 ffmpeg_log_line_number() {

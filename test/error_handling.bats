@@ -13,8 +13,8 @@ load test_helper
   declare -r another_failed_fixed_video="$fixed_videos_dir/another-failed.60_fps.mp4"
   declare -r processed_fixed_video="$fixed_videos_dir/processed.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$failed_video" "$another_failed_video" "$processed_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$failed_video" "$another_failed_video" "$processed_video"
   {
     printf '%s|50\n' "$failed_video"
     printf '%s|50\n' "$another_failed_video"
@@ -54,8 +54,8 @@ load test_helper
   declare -r another_failed_accelerated_video="$fixed_videos_dir/another-failed.60_fps.1.5x.mp4"
   declare -r processed_accelerated_video="$fixed_videos_dir/processed.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$failed_video" "$another_failed_video" "$processed_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$failed_video" "$another_failed_video" "$processed_video"
   {
     printf '%s|50\n' "$failed_video"
     printf '%s|50\n' "$another_failed_video"
@@ -102,8 +102,8 @@ load test_helper
   declare -r another_failed_fixed_video="$fixed_videos_dir/another-failed.60_fps.mp4"
   declare -r processed_fixed_video="$fixed_videos_dir/processed.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$failed_video" "$another_failed_video" "$processed_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$failed_video" "$another_failed_video" "$processed_video"
   # two failing files prove that the loop reached another failure after the first one,
   # regardless of the order returned by `find`
   {
@@ -136,8 +136,8 @@ load test_helper
   declare -r another_no_fps_fixed_video="$fixed_videos_dir/another-no-fps.60_fps.mp4"
   declare -r processed_fixed_video="$fixed_videos_dir/processed.60_fps.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$no_fps_video" "$another_no_fps_video" "$processed_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$no_fps_video" "$another_no_fps_video" "$processed_video"
   {
     printf '%s|0/0\n' "$no_fps_video"
     printf '%s|0/0\n' "$another_no_fps_video"
@@ -170,8 +170,8 @@ load test_helper
   declare -r another_failed_accelerated_video="$fixed_videos_dir/another-failed.60_fps.1.5x.mp4"
   declare -r processed_accelerated_video="$fixed_videos_dir/processed.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$failed_video" "$another_failed_video" "$processed_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$failed_video" "$another_failed_video" "$processed_video"
   # two failing files prove that the loop reached another failure after the first one,
   # regardless of the order returned by `find`
   {

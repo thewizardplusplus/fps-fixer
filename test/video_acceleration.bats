@@ -14,11 +14,11 @@ load test_helper
   declare -r non_target_fps_accelerated_video="$fixed_videos_dir/fix.60_fps.1.5x.mp4"
 
   for speed_option in -s --speed-factor; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$target_fps_video" "$non_target_fps_video"
+    mkdir -p -- "$input_dir"
+    touch -- "$target_fps_video" "$non_target_fps_video"
     {
       printf '%s|60\n' "$target_fps_video"
       printf '%s|50\n' "$non_target_fps_video"
@@ -57,12 +57,12 @@ load test_helper
 
   for speed_option in -s --speed-factor; do
     for force_option in -F --force; do
-      rm -rf "$input_dir"
-      truncate -s 0 "$FFMPEG_LOG_FILE"
-      truncate -s 0 "$FFPROBE_LOG_FILE"
+      rm -rf -- "$input_dir"
+      truncate -s 0 -- "$FFMPEG_LOG_FILE"
+      truncate -s 0 -- "$FFPROBE_LOG_FILE"
 
-      mkdir -p "$input_dir"
-      touch "$video"
+      mkdir -p -- "$input_dir"
+      touch -- "$video"
       printf '%s|60\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
       run "$SCRIPT" "$speed_option" 1.5 "$force_option" "$input_dir"
@@ -91,11 +91,11 @@ load test_helper
   declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
   for speed_option in -s --speed-factor; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$video"
+    mkdir -p -- "$input_dir"
+    touch -- "$video"
     printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
 
     run "$SCRIPT" "$speed_option" 1.5 --no-audio "$input_dir"
@@ -124,11 +124,11 @@ load test_helper
   declare -r accelerated_video="$fixed_videos_dir/video.60_fps.1.5x.mp4"
 
   for speed_option in -s --speed-factor; do
-    rm -rf "$input_dir"
-    truncate -s 0 "$FFMPEG_LOG_FILE"
+    rm -rf -- "$input_dir"
+    truncate -s 0 -- "$FFMPEG_LOG_FILE"
 
-    mkdir -p "$input_dir"
-    touch "$video"
+    mkdir -p -- "$input_dir"
+    touch -- "$video"
     printf '%s|50\n' "$video" > "$FFPROBE_FPS_MAP_FILE"
     printf '%s|FALSE\n' "$(relative_path "$fixed_video")" > "$FFPROBE_AUDIO_MAP_FILE"
 
@@ -160,8 +160,8 @@ load test_helper
   declare -r sibling_fixed_video="$fixed_videos_dir/sibling.60_fps.mp4"
   declare -r sibling_accelerated_video="$fixed_videos_dir/sibling.60_fps.1.5x.mp4"
 
-  mkdir -p "$input_dir"
-  touch "$selected_video" "$sibling_video"
+  mkdir -p -- "$input_dir"
+  touch -- "$selected_video" "$sibling_video"
   {
     printf '%s|50\n' "$selected_video"
     printf '%s|50\n' "$sibling_video"
