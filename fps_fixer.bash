@@ -139,7 +139,8 @@ while [[ "$1" != "--" ]]; do
       echo "  -h, --help                           - show the help;"
       echo "  -e EXTENSION, --extension EXTENSION  - video file extension (default: \"mp4\");"
       echo "  -b PATH, --base-path PATH            - base path for fixed videos" \
-        "(should be relative to argument \"<path>\"; default: \"./fixed-videos\");"
+        "(relative to the input directory or single file's parent directory;" \
+        "default: \"./fixed-videos\");"
       echo "  -f FPS, --fps FPS                    - target FPS (default: \"60\");"
       echo "  -E EPSILON, --epsilon EPSILON        - allowable error when comparing FPS" \
         "(default: \"2\");"
@@ -151,8 +152,8 @@ while [[ "$1" != "--" ]]; do
         "only search for them and check their FPS."
       echo
       echo "Arguments:"
-      echo "  <path>                               - base path to original videos" \
-        "(default: \".\")."
+      echo "  <path>                               - directory containing original videos" \
+        "or a single original video file (default: \".\")."
 
       exit 0
       ;;
@@ -194,7 +195,11 @@ declare original_video_base_path="."
 shift # an additional shift for the "--" option
 if [[ $# == 1 ]]; then
   original_video_base_path="$1"
-  fixed_video_base_path="$original_video_base_path/$fixed_video_base_path"
+  if [[ -f "$original_video_base_path" ]]; then
+    fixed_video_base_path="$(dirname -- "$original_video_base_path")/$fixed_video_base_path"
+  else
+    fixed_video_base_path="$original_video_base_path/$fixed_video_base_path"
+  fi
 elif [[ $# > 1 ]]; then
   log ERROR "too many positional arguments"
   exit 1

@@ -242,3 +242,32 @@ load test_helper
   grep -F -- "-an" "$FFMPEG_LOG_FILE"
   grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
 }
+
+@test "[$(test_file_group)] single-file input writes processed output beside the input file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/video.mp4"
+  declare -r sibling_video="$input_dir/sibling.mp4"
+
+  declare -r fixed_videos_dir="$input_dir/fixed-videos"
+  declare -r fixed_video="$fixed_videos_dir/video.60_fps.mp4"
+  declare -r sibling_fixed_video="$fixed_videos_dir/sibling.60_fps.mp4"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video" "$sibling_video"
+  {
+    printf '%s|50\n' "$selected_video"
+    printf '%s|50\n' "$sibling_video"
+  } > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" "$selected_video"
+  [ "$status" -eq 0 ]
+  [ -f "$fixed_video" ]
+  [ ! -f "$sibling_fixed_video" ]
+  [ "$(ffmpeg_processing_call_count)" -eq 1 ]
+  grep -F -- "-filter:v fps=60" "$FFMPEG_LOG_FILE"
+  grep -F -- "-vsync cfr" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:v" "$FFMPEG_LOG_FILE"
+  grep -F -- "-map 0:a?" "$FFMPEG_LOG_FILE"
+  grep -F -- "$(relative_path "$fixed_video")" "$FFMPEG_LOG_FILE"
+  ! grep -F -- "$(relative_path "$sibling_fixed_video")" "$FFMPEG_LOG_FILE"
+}

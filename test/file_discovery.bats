@@ -81,3 +81,33 @@ load test_helper
     grep -F -- "$top_level_target_mov" "$FFPROBE_LOG_FILE"
   done
 }
+
+@test "[$(test_file_group)] single-file input discovers only the selected matching file" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/selected.mp4"
+  declare -r sibling_video="$input_dir/sibling.mp4"
+  declare -r non_target_video="$input_dir/selected.mov"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video" "$sibling_video" "$non_target_video"
+  printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" --no-process "$selected_video"
+  [ "$status" -eq 0 ]
+  grep -F -- "$selected_video" "$FFPROBE_LOG_FILE"
+  ! grep -F -- "$sibling_video" "$FFPROBE_LOG_FILE"
+  ! grep -F -- "$non_target_video" "$FFPROBE_LOG_FILE"
+}
+
+@test "[$(test_file_group)] single-file input with non-matching extension is ignored" {
+  declare -r input_dir="$TMPDIR_TEST/in"
+  declare -r selected_video="$input_dir/selected.mov"
+
+  mkdir -p "$input_dir"
+  touch "$selected_video"
+  printf '%s|50\n' "$selected_video" > "$FFPROBE_FPS_MAP_FILE"
+
+  run "$SCRIPT" --no-process "$selected_video"
+  [ "$status" -eq 0 ]
+  ! grep -F -- "$selected_video" "$FFPROBE_LOG_FILE"
+}
