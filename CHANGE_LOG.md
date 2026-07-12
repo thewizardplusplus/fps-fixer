@@ -1,6 +1,6 @@
 # Change Log
 
-## [v1.2.0](https://github.com/thewizardplusplus/fps-fixer/tree/v1.2.0) (2026-07-11)
+## [v1.2.0](https://github.com/thewizardplusplus/fps-fixer/tree/v1.2.0) (2026-07-12)
 
 Add video speed adjustment and audio removal, improve FPS detection and processing controls, support a single video file as input, and introduce an automated test suite.
 

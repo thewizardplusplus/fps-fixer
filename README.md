@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/thewizardplusplus/fps-fixer/actions/workflows/tests.yml/badge.svg)](https://github.com/thewizardplusplus/fps-fixer/actions/workflows/tests.yml)
 
-![](docs/screenshot_1.png)
+![](docs/screenshot_2.png)
 
 The utility for fixing FPS in videos. It also supports speeding up or slowing down videos and removing audio tracks.
 
